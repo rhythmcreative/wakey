@@ -1,0 +1,105 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Wakey",
+        "description": "Wakey adds an alarm clock to Home Assistant. There is nothing to configure here — alarms are managed after setup."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Wakey is already set up."
+    }
+  },
+  "selector": {
+    "repeat": {
+      "options": {
+        "once": "Once",
+        "weekly": "Weekly"
+      }
+    },
+    "source_kind": {
+      "options": {
+        "music_assistant": "Music Assistant",
+        "media_player": "Media player"
+      }
+    }
+  },
+  "services": {
+    "create": {
+      "name": "Create alarm",
+      "description": "Adds a new alarm.",
+      "fields": {
+        "name": { "name": "Name", "description": "Label shown in the UI." },
+        "time": { "name": "Time", "description": "Local wall-clock time the alarm goes off." },
+        "repeat": { "name": "Repeat", "description": "Fire once on a given date, or weekly on the selected days." },
+        "weekdays": { "name": "Weekdays", "description": "Days to fire on when repeating weekly." },
+        "date": { "name": "Date", "description": "The date to fire on when repeat is set to once." },
+        "media_player": { "name": "Media player", "description": "Speaker to play on. For Music Assistant sources this must be a Music Assistant player." },
+        "source_uri": { "name": "Source", "description": "A Music Assistant URI such as library://track/6018, a media content ID, or search text." },
+        "source_kind": { "name": "Source type", "description": "Which service plays the source." },
+        "volume": { "name": "Volume", "description": "Target volume, 0 to 1." },
+        "fade_seconds": { "name": "Fade in", "description": "Seconds to ramp from quiet up to the target volume. 0 starts at full volume." },
+        "snooze_minutes": { "name": "Snooze", "description": "How long a snooze lasts." },
+        "auto_dismiss_minutes": { "name": "Auto dismiss", "description": "Stop by itself after this long if nobody dismisses it." },
+        "enabled": { "name": "Enabled", "description": "Whether the alarm is armed." }
+      }
+    },
+    "update": {
+      "name": "Update alarm",
+      "description": "Changes fields on an existing alarm. Only the fields you supply are altered.",
+      "fields": {
+        "alarm_id": { "name": "Alarm ID", "description": "The alarm to change." },
+        "name": { "name": "Name", "description": "Label shown in the UI." },
+        "enabled": { "name": "Enabled", "description": "Whether the alarm is armed." },
+        "time": { "name": "Time", "description": "Local wall-clock time the alarm goes off." },
+        "repeat": { "name": "Repeat", "description": "Fire once on a given date, or weekly on the selected days." },
+        "weekdays": { "name": "Weekdays", "description": "Days to fire on when repeating weekly." },
+        "date": { "name": "Date", "description": "The date to fire on when repeat is set to once." },
+        "media_player": { "name": "Media player", "description": "Speaker to play on." },
+        "source_uri": { "name": "Source", "description": "Music Assistant URI, media content ID, or search text." },
+        "source_kind": { "name": "Source type", "description": "Which service plays the source." },
+        "volume": { "name": "Volume", "description": "Target volume, 0 to 1." },
+        "fade_seconds": { "name": "Fade in", "description": "Seconds to ramp up to the target volume." },
+        "snooze_minutes": { "name": "Snooze", "description": "How long a snooze lasts." },
+        "auto_dismiss_minutes": { "name": "Auto dismiss", "description": "Stop by itself after this long." }
+      }
+    },
+    "delete": {
+      "name": "Delete alarm",
+      "description": "Removes an alarm and its entities.",
+      "fields": {
+        "alarm_id": { "name": "Alarm ID", "description": "The alarm to remove." }
+      }
+    },
+    "snooze": {
+      "name": "Snooze",
+      "description": "Silences a ringing alarm and brings it back shortly.",
+      "fields": {
+        "alarm_id": { "name": "Alarm ID", "description": "Leave empty to snooze whatever is currently ringing." },
+        "minutes": { "name": "Minutes", "description": "Override the alarm's own snooze length." }
+      }
+    },
+    "dismiss": {
+      "name": "Dismiss",
+      "description": "Stops a ringing alarm until its next occurrence.",
+      "fields": {
+        "alarm_id": { "name": "Alarm ID", "description": "Leave empty to dismiss everything currently ringing." }
+      }
+    },
+    "skip_next": {
+      "name": "Skip next",
+      "description": "Skips the next occurrence only, then resumes as normal.",
+      "fields": {
+        "alarm_id": { "name": "Alarm ID", "description": "The alarm to skip." },
+        "skip": { "name": "Skip", "description": "Turn off to cancel a previously requested skip." }
+      }
+    },
+    "trigger_now": {
+      "name": "Trigger now",
+      "description": "Fires an alarm immediately. Useful for checking that a speaker and source actually work.",
+      "fields": {
+        "alarm_id": { "name": "Alarm ID", "description": "The alarm to fire." }
+      }
+    }
+  }
+}

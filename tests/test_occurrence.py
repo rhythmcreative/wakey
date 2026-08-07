@@ -1,0 +1,244 @@
+"""Tests for the pure occurrence math.
+
+No Home Assistant involved — this is where the DST behaviour is pinned down.
+"""
+
+from datetime import date, datetime, timezone
+from zoneinfo import ZoneInfo
+
+from custom_components.wakey import occurrence
+
+NY = ZoneInfo("America/New_York")
+
+WEEKDAYS = [0, 1, 2, 3, 4]
+
+
+def _utc(y, m, d, hh, mm):
+    return datetime(y, m, d, hh, mm, tzinfo=NY).astimezone(timezone.utc)
+
+
+# --- DST -------------------------------------------------------------------
+
+
+def test_spring_forward_gap_fires_at_transition():
+    """02:30 does not exist on 2026-03-08; fire at 03:00, never at 01:30."""
+    result = occurrence.to_utc(datetime(2026, 3, 8, 2, 30), NY)
+    local = result.astimezone(NY)
+    assert (local.hour, local.minute) == (3, 0)
+    assert local.utcoffset().total_seconds() == -4 * 3600  # EDT
+
+
+def test_fall_back_ambiguous_uses_first_pass():
+    """01:30 happens twice on 2026-11-01; take the earlier (EDT) one."""
+    result = occurrence.to_utc(datetime(2026, 11, 1, 1, 30), NY)
+    local = result.astimezone(NY)
+    assert (local.hour, local.minute) == (1, 30)
+    assert local.utcoffset().total_seconds() == -4 * 3600  # EDT, not EST
+
+
+def test_fall_back_does_not_double_fire():
+    """The most likely correctness bug in an alarm clock.
+
+    After ringing at the first 01:30 on fall-back night, the next occurrence
+    must be the following day — not the second 01:30 an hour later.
+    """
+    fired_at = occurrence.to_utc(datetime(2026, 11, 1, 1, 30), NY)
+    following = occurrence.next_occurrence(
+        time_str="01:30",
+        repeat="weekly",
+        weekdays=[0, 1, 2, 3, 4, 5, 6],
+        one_off_date=None,
+        tz=NY,
+        now_utc=fired_at,
+    )
+    assert following.astimezone(NY).date() == date(2026, 11, 2)
+
+
+def test_normal_time_round_trips():
+    result = occurrence.to_utc(datetime(2026, 6, 15, 7, 0), NY)
+    assert result.astimezone(NY).replace(tzinfo=None) == datetime(2026, 6, 15, 7, 0)
+
+
+def test_alarm_across_spring_forward_still_scheduled():
+    """A 02:30 weekday alarm must not vanish on the transition day."""
+    now = _utc(2026, 3, 7, 12, 0)  # Saturday before the change
+    result = occurrence.next_occurrence(
+        time_str="02:30",
+        repeat="weekly",
+        weekdays=[6],  # Sunday
+        one_off_date=None,
+        tz=NY,
+        now_utc=now,
+    )
+    assert result is not None
+    assert result.astimezone(NY).hour == 3
+
+
+# --- weekly ----------------------------------------------------------------
+
+
+def test_weekly_picks_next_matching_day():
+    now = _utc(2026, 8, 8, 12, 0)  # Saturday
+    result = occurrence.next_occurrence(
+        time_str="07:00",
+        repeat="weekly",
+        weekdays=WEEKDAYS,
+        one_off_date=None,
+        tz=NY,
+        now_utc=now,
+    )
+    assert result == _utc(2026, 8, 10, 7, 0)  # Monday
+
+
+def test_weekly_later_today_still_counts():
+    now = _utc(2026, 8, 10, 6, 0)  # Monday 06:00
+    result = occurrence.next_occurrence(
+        time_str="07:00",
+        repeat="weekly",
+        weekdays=WEEKDAYS,
+        one_off_date=None,
+        tz=NY,
+        now_utc=now,
+    )
+    assert result == _utc(2026, 8, 10, 7, 0)
+
+
+def test_weekly_already_passed_today_rolls_over():
+    now = _utc(2026, 8, 10, 8, 0)  # Monday 08:00, past 07:00
+    result = occurrence.next_occurrence(
+        time_str="07:00",
+        repeat="weekly",
+        weekdays=WEEKDAYS,
+        one_off_date=None,
+        tz=NY,
+        now_utc=now,
+    )
+    assert result == _utc(2026, 8, 11, 7, 0)  # Tuesday
+
+
+def test_no_weekdays_never_fires():
+    now = _utc(2026, 8, 8, 12, 0)
+    assert (
+        occurrence.next_occurrence(
+            time_str="07:00",
+            repeat="weekly",
+            weekdays=[],
+            one_off_date=None,
+            tz=NY,
+            now_utc=now,
+        )
+        is None
+    )
+
+
+# --- skip next -------------------------------------------------------------
+
+
+def test_skip_next_returns_the_one_after():
+    now = _utc(2026, 8, 8, 12, 0)  # Saturday
+    result = occurrence.next_occurrence(
+        time_str="07:00",
+        repeat="weekly",
+        weekdays=WEEKDAYS,
+        one_off_date=None,
+        tz=NY,
+        now_utc=now,
+        skip_next=True,
+    )
+    assert result == _utc(2026, 8, 11, 7, 0)  # Tuesday, not Monday
+
+
+# --- one-off ---------------------------------------------------------------
+
+
+def test_one_off_in_future():
+    now = _utc(2026, 8, 8, 12, 0)
+    result = occurrence.next_occurrence(
+        time_str="06:30",
+        repeat="once",
+        weekdays=None,
+        one_off_date="2026-08-09",
+        tz=NY,
+        now_utc=now,
+    )
+    assert result == _utc(2026, 8, 9, 6, 30)
+
+
+def test_one_off_in_past_is_none():
+    now = _utc(2026, 8, 8, 12, 0)
+    assert (
+        occurrence.next_occurrence(
+            time_str="06:30",
+            repeat="once",
+            weekdays=None,
+            one_off_date="2026-01-01",
+            tz=NY,
+            now_utc=now,
+        )
+        is None
+    )
+
+
+def test_skipped_one_off_never_fires():
+    now = _utc(2026, 8, 8, 12, 0)
+    assert (
+        occurrence.next_occurrence(
+            time_str="06:30",
+            repeat="once",
+            weekdays=None,
+            one_off_date="2026-08-09",
+            tz=NY,
+            now_utc=now,
+            skip_next=True,
+        )
+        is None
+    )
+
+
+# --- previous / missed detection -------------------------------------------
+
+
+def test_previous_occurrence_finds_last_weekday():
+    now = _utc(2026, 8, 8, 12, 0)  # Saturday
+    result = occurrence.previous_occurrence(
+        time_str="07:00",
+        repeat="weekly",
+        weekdays=WEEKDAYS,
+        one_off_date=None,
+        tz=NY,
+        now_utc=now,
+    )
+    assert result == _utc(2026, 8, 7, 7, 0)  # Friday
+
+
+def test_previous_occurrence_none_before_first_one_off():
+    now = _utc(2026, 8, 8, 12, 0)
+    assert (
+        occurrence.previous_occurrence(
+            time_str="07:00",
+            repeat="once",
+            weekdays=None,
+            one_off_date="2026-09-01",
+            tz=NY,
+            now_utc=now,
+        )
+        is None
+    )
+
+
+# --- robustness ------------------------------------------------------------
+
+
+def test_garbage_time_returns_none_rather_than_raising():
+    now = _utc(2026, 8, 8, 12, 0)
+    assert (
+        occurrence.next_occurrence(
+            time_str="not-a-time",
+            repeat="weekly",
+            weekdays=WEEKDAYS,
+            one_off_date=None,
+            tz=NY,
+            now_utc=now,
+        )
+        is None
+    )

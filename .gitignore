@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+node_modules/
+frontend/node_modules/
+
+.DS_Store
+.idea/
+.vscode/
+.claude/

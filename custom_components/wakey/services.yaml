@@ -1,0 +1,234 @@
+create:
+  fields:
+    name:
+      required: false
+      example: Weekday alarm
+      selector:
+        text:
+    time:
+      required: true
+      example: "06:30"
+      selector:
+        time:
+    repeat:
+      required: false
+      default: weekly
+      selector:
+        select:
+          options:
+            - once
+            - weekly
+          translation_key: repeat
+    weekdays:
+      required: false
+      selector:
+        select:
+          multiple: true
+          options:
+            - label: Monday
+              value: "0"
+            - label: Tuesday
+              value: "1"
+            - label: Wednesday
+              value: "2"
+            - label: Thursday
+              value: "3"
+            - label: Friday
+              value: "4"
+            - label: Saturday
+              value: "5"
+            - label: Sunday
+              value: "6"
+    date:
+      required: false
+      example: "2026-08-08"
+      selector:
+        date:
+    media_player:
+      required: true
+      selector:
+        entity:
+          filter:
+            domain: media_player
+    source_uri:
+      required: true
+      example: library://track/6018
+      selector:
+        text:
+    source_kind:
+      required: false
+      default: music_assistant
+      selector:
+        select:
+          options:
+            - music_assistant
+            - media_player
+          translation_key: source_kind
+    volume:
+      required: false
+      default: 0.7
+      selector:
+        number:
+          min: 0
+          max: 1
+          step: 0.05
+    fade_seconds:
+      required: false
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: s
+    snooze_minutes:
+      required: false
+      default: 9
+      selector:
+        number:
+          min: 1
+          max: 120
+          unit_of_measurement: min
+    auto_dismiss_minutes:
+      required: false
+      default: 30
+      selector:
+        number:
+          min: 1
+          max: 240
+          unit_of_measurement: min
+    enabled:
+      required: false
+      default: true
+      selector:
+        boolean:
+
+update:
+  fields:
+    alarm_id:
+      required: true
+      selector:
+        text:
+    name:
+      selector:
+        text:
+    enabled:
+      selector:
+        boolean:
+    time:
+      selector:
+        time:
+    repeat:
+      selector:
+        select:
+          options:
+            - once
+            - weekly
+          translation_key: repeat
+    weekdays:
+      selector:
+        select:
+          multiple: true
+          options:
+            - label: Monday
+              value: "0"
+            - label: Tuesday
+              value: "1"
+            - label: Wednesday
+              value: "2"
+            - label: Thursday
+              value: "3"
+            - label: Friday
+              value: "4"
+            - label: Saturday
+              value: "5"
+            - label: Sunday
+              value: "6"
+    date:
+      selector:
+        date:
+    media_player:
+      selector:
+        entity:
+          filter:
+            domain: media_player
+    source_uri:
+      selector:
+        text:
+    source_kind:
+      selector:
+        select:
+          options:
+            - music_assistant
+            - media_player
+          translation_key: source_kind
+    volume:
+      selector:
+        number:
+          min: 0
+          max: 1
+          step: 0.05
+    fade_seconds:
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: s
+    snooze_minutes:
+      selector:
+        number:
+          min: 1
+          max: 120
+          unit_of_measurement: min
+    auto_dismiss_minutes:
+      selector:
+        number:
+          min: 1
+          max: 240
+          unit_of_measurement: min
+
+delete:
+  fields:
+    alarm_id:
+      required: true
+      selector:
+        text:
+
+snooze:
+  fields:
+    alarm_id:
+      required: false
+      selector:
+        text:
+    minutes:
+      required: false
+      selector:
+        number:
+          min: 1
+          max: 120
+          unit_of_measurement: min
+
+dismiss:
+  fields:
+    alarm_id:
+      required: false
+      selector:
+        text:
+
+skip_next:
+  fields:
+    alarm_id:
+      required: true
+      selector:
+        text:
+    skip:
+      required: false
+      default: true
+      selector:
+        boolean:
+
+trigger_now:
+  fields:
+    alarm_id:
+      required: true
+      selector:
+        text:

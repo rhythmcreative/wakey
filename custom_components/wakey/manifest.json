@@ -1,0 +1,15 @@
+{
+  "domain": "wakey",
+  "name": "Wakey",
+  "codeowners": ["@johnrcarty"],
+  "config_flow": true,
+  "dependencies": [],
+  "after_dependencies": ["music_assistant", "media_player"],
+  "documentation": "https://github.com/johnrcarty/wakey",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/johnrcarty/wakey/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.1.0"
+}

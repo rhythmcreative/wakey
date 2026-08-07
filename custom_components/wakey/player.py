@@ -31,6 +31,7 @@ from .const import (
     EVENT_ALARM_FAILED,
     EVENT_ALARM_FIRED,
     EVENT_ALARM_SNOOZED,
+    EVENT_PRE_ALARM,
     FADE_FLOOR,
     FADE_STEP_SECONDS,
     PLAYBACK_VERIFY_SECONDS,
@@ -115,6 +116,30 @@ class WakeyPlayer:
             )
 
         async_dispatcher_send(self.hass, SIGNAL_RUNTIME_CHANGED)
+
+    async def async_run_pre_alarm(self, alarm: AlarmEntry) -> None:
+        """Run the pre-alarm hook — lights, heating, whatever they wired up.
+
+        Fires the event regardless of whether a script is configured, so an
+        automation can trigger on it without needing a script at all.
+        """
+        self.hass.bus.async_fire(
+            EVENT_PRE_ALARM,
+            {
+                ATTR_ALARM_ID: alarm.id,
+                "name": alarm.name,
+                "minutes_before": alarm.pre_alarm_minutes,
+            },
+        )
+        if alarm.pre_alarm_script:
+            _LOGGER.info(
+                "Pre-alarm for %s: running %s", alarm.name, alarm.pre_alarm_script
+            )
+            # Not blocking: a sunrise script may run for the whole pre-alarm
+            # window, and waiting for it would delay nothing useful.
+            await self._call(
+                "script", "turn_on", {ATTR_ENTITY_ID: alarm.pre_alarm_script}
+            )
 
     async def _async_start_playback(self, alarm: AlarmEntry, state: RingState) -> None:
         state.attempts += 1

@@ -169,6 +169,8 @@ export class WakeyPanel extends LitElement {
       fade_seconds: Number(d.fade_seconds ?? 0),
       snooze_minutes: Number(d.snooze_minutes ?? 9),
       auto_dismiss_minutes: Number(d.auto_dismiss_minutes ?? 30),
+      pre_alarm_minutes: Number(d.pre_alarm_minutes ?? 0),
+      pre_alarm_script: d.pre_alarm_script || null,
     };
     if (this._editing) {
       await this._call({ type: "wakey/update", alarm_id: this._editing, ...payload });
@@ -229,6 +231,14 @@ export class WakeyPanel extends LitElement {
             name: "auto_dismiss_minutes",
             selector: { number: { min: 1, max: 240, mode: "box", unit_of_measurement: "min" } },
           },
+          {
+            name: "pre_alarm_minutes",
+            selector: { number: { min: 0, max: 240, mode: "box", unit_of_measurement: "min" } },
+          },
+          {
+            name: "pre_alarm_script",
+            selector: { entity: { filter: { domain: "script" } } },
+          },
         ],
       },
     ];
@@ -248,6 +258,8 @@ export class WakeyPanel extends LitElement {
       fade_seconds: "Fade in",
       snooze_minutes: "Snooze length",
       auto_dismiss_minutes: "Auto dismiss after",
+      pre_alarm_minutes: "Pre-alarm lead time",
+      pre_alarm_script: "Pre-alarm script",
       advanced: "Advanced",
     })[s.name as string] ?? s.name;
 

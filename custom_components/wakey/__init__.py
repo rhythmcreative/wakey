@@ -52,6 +52,8 @@ _ALARM_FIELDS = {
     vol.Optional("fade_seconds"): vol.All(vol.Coerce(int), vol.Range(0, 3600)),
     vol.Optional("snooze_minutes"): vol.All(vol.Coerce(int), vol.Range(1, 120)),
     vol.Optional("auto_dismiss_minutes"): vol.All(vol.Coerce(int), vol.Range(1, 240)),
+    vol.Optional("pre_alarm_minutes"): vol.All(vol.Coerce(int), vol.Range(0, 240)),
+    vol.Optional("pre_alarm_script"): vol.Any(cv.entity_id, None),
 }
 
 CREATE_SCHEMA = vol.Schema(
@@ -97,7 +99,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await store.async_load()
 
     player = WakeyPlayer(hass, store)
-    scheduler = WakeyScheduler(hass, store, player.async_fire)
+    scheduler = WakeyScheduler(
+        hass, store, player.async_fire, player.async_run_pre_alarm
+    )
 
     data = WakeyData(store=store, scheduler=scheduler, player=player)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = data

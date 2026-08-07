@@ -14,6 +14,8 @@ export interface Alarm {
   fade_seconds: number;
   snooze_minutes: number;
   auto_dismiss_minutes: number;
+  pre_alarm_minutes: number;
+  pre_alarm_script: string | null;
   next_fire: string | null;
   is_ringing: boolean;
   is_snoozed: boolean;

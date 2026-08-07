@@ -20,14 +20,19 @@ async def async_setup_entry(
 
     @callback
     def _add(alarm: AlarmEntry) -> None:
-        async_add_entities([WakeyAlarmSwitch(data, alarm.id)])
+        async_add_entities(
+            [WakeyAlarmSwitch(data, alarm.id), WakeySkipNextSwitch(data, alarm.id)]
+        )
 
     entry.async_on_unload(
         async_dispatcher_connect(hass, SIGNAL_ALARM_REGISTERED, _add)
     )
-    async_add_entities(
-        WakeyAlarmSwitch(data, alarm.id) for alarm in data.store.async_all()
-    )
+
+    entities: list[SwitchEntity] = []
+    for alarm in data.store.async_all():
+        entities.append(WakeyAlarmSwitch(data, alarm.id))
+        entities.append(WakeySkipNextSwitch(data, alarm.id))
+    async_add_entities(entities)
 
 
 class WakeyAlarmSwitch(WakeyAlarmEntity, SwitchEntity):
@@ -67,3 +72,31 @@ class WakeyAlarmSwitch(WakeyAlarmEntity, SwitchEntity):
     async def async_turn_off(self, **kwargs) -> None:
         self._data.store.async_update(self._alarm_id, {"enabled": False})
         await self._data.player.async_dismiss(self._alarm_id, reason="disabled")
+
+
+class WakeySkipNextSwitch(WakeyAlarmEntity, SwitchEntity):
+    """Skip just the next occurrence.
+
+    A separate entity rather than only a panel button so it works by voice —
+    "turn on skip next for the weekday alarm" — and from automations. The flag
+    clears itself once the skipped occurrence has passed.
+    """
+
+    _attr_name = "Skip next"
+    _attr_icon = "mdi:debug-step-over"
+    _attr_entity_registry_enabled_default = False
+
+    def __init__(self, data, alarm_id: str) -> None:
+        super().__init__(data, alarm_id)
+        self._attr_unique_id = f"{alarm_id}_skip_next"
+
+    @property
+    def is_on(self) -> bool:
+        alarm = self.alarm
+        return bool(alarm and alarm.skip_next)
+
+    async def async_turn_on(self, **kwargs) -> None:
+        self._data.store.async_update(self._alarm_id, {"skip_next": True})
+
+    async def async_turn_off(self, **kwargs) -> None:
+        self._data.store.async_update(self._alarm_id, {"skip_next": False})

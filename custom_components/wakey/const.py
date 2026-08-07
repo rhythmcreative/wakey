@@ -8,7 +8,13 @@ DOMAIN = "wakey"
 NAME = "Wakey"
 VERSION = "0.1.0"
 
-PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.SWITCH, Platform.TIME]
+PLATFORMS: list[Platform] = [
+    Platform.BINARY_SENSOR,
+    Platform.BUTTON,
+    Platform.SENSOR,
+    Platform.SWITCH,
+    Platform.TIME,
+]
 
 # --- Panel -----------------------------------------------------------------
 # Paths mirror Alarmo's layout, which is a known-good arrangement on HA 2026.7:
@@ -35,6 +41,7 @@ SIGNAL_ALARMS_CHANGED = f"{DOMAIN}_alarms_changed"
 SIGNAL_RUNTIME_CHANGED = f"{DOMAIN}_runtime_changed"
 
 # --- Events ----------------------------------------------------------------
+EVENT_PRE_ALARM = f"{DOMAIN}_pre_alarm"
 EVENT_ALARM_FIRED = f"{DOMAIN}_alarm_fired"
 EVENT_ALARM_FAILED = f"{DOMAIN}_alarm_failed"
 EVENT_ALARM_DISMISSED = f"{DOMAIN}_alarm_dismissed"
@@ -56,6 +63,8 @@ ATTR_VOLUME = "volume"
 ATTR_FADE_SECONDS = "fade_seconds"
 ATTR_SNOOZE_MINUTES = "snooze_minutes"
 ATTR_AUTO_DISMISS_MINUTES = "auto_dismiss_minutes"
+ATTR_PRE_ALARM_MINUTES = "pre_alarm_minutes"
+ATTR_PRE_ALARM_SCRIPT = "pre_alarm_script"
 ATTR_LAST_FIRED = "last_fired"
 
 # --- Enumerations ----------------------------------------------------------
@@ -72,6 +81,8 @@ DEFAULT_VOLUME = 0.7
 DEFAULT_FADE_SECONDS = 0
 DEFAULT_SNOOZE_MINUTES = 9
 DEFAULT_AUTO_DISMISS_MINUTES = 30
+# 0 disables the pre-alarm hook entirely.
+DEFAULT_PRE_ALARM_MINUTES = 0
 
 # How long after a missed firing time Wakey will still fire on startup. Beyond
 # this the occurrence is logged and skipped — waking someone an hour late is

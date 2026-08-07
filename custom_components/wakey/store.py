@@ -19,6 +19,7 @@ from homeassistant.helpers.storage import Store
 from .const import (
     DEFAULT_AUTO_DISMISS_MINUTES,
     DEFAULT_FADE_SECONDS,
+    DEFAULT_PRE_ALARM_MINUTES,
     DEFAULT_SNOOZE_MINUTES,
     DEFAULT_VOLUME,
     DOMAIN,
@@ -58,6 +59,10 @@ class AlarmEntry:
     fade_seconds: int = DEFAULT_FADE_SECONDS
     snooze_minutes: int = DEFAULT_SNOOZE_MINUTES
     auto_dismiss_minutes: int = DEFAULT_AUTO_DISMISS_MINUTES
+    # Optional hook: run a script this many minutes before the alarm (sunrise
+    # lights, heating, and so on). 0 disables it.
+    pre_alarm_minutes: int = DEFAULT_PRE_ALARM_MINUTES
+    pre_alarm_script: str | None = None
     last_fired: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -88,6 +93,7 @@ def coerce(data: dict[str, Any]) -> dict[str, Any]:
         ("fade_seconds", DEFAULT_FADE_SECONDS, 0, 3600),
         ("snooze_minutes", DEFAULT_SNOOZE_MINUTES, 1, 120),
         ("auto_dismiss_minutes", DEFAULT_AUTO_DISMISS_MINUTES, 1, 240),
+        ("pre_alarm_minutes", DEFAULT_PRE_ALARM_MINUTES, 0, 240),
     ):
         if key in out:
             try:

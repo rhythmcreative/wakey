@@ -30,16 +30,25 @@ from .store import AlarmEntry, WakeyStore
 _LOGGER = logging.getLogger(__name__)
 
 FireCallback = Callable[[AlarmEntry, bool], Awaitable[None]]
+PreFireCallback = Callable[[AlarmEntry], Awaitable[None]]
 
 
 class WakeyScheduler:
     """Owns the pending timers for every alarm."""
 
-    def __init__(self, hass: HomeAssistant, store: WakeyStore, fire: FireCallback) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        store: WakeyStore,
+        fire: FireCallback,
+        pre_fire: PreFireCallback | None = None,
+    ) -> None:
         self.hass = hass
         self.store = store
         self._fire = fire
+        self._pre_fire = pre_fire
         self._timers: dict[str, CALLBACK_TYPE] = {}
+        self._pre_timers: dict[str, CALLBACK_TYPE] = {}
         self._unsubs: list[CALLBACK_TYPE] = []
 
     # --- lifecycle ---------------------------------------------------------
@@ -133,12 +142,47 @@ class WakeyScheduler:
 
         self._timers[alarm.id] = async_track_point_in_utc_time(self.hass, _fired, when)
         _LOGGER.debug("Scheduled %s (%s) for %s", alarm.name, alarm.id, when)
+        self._schedule_pre_alarm(alarm)
+
+    @callback
+    def _schedule_pre_alarm(self, alarm: AlarmEntry) -> None:
+        """Schedule the pre-alarm hook, if this alarm has one."""
+        if self._pre_fire is None or not alarm.pre_alarm_minutes or not alarm.pre_alarm_script:
+            return
+
+        # Deliberately the skip-aware next fire: if the next occurrence is
+        # being skipped, its sunrise lights should be skipped too.
+        effective = self.async_next_fire(alarm)
+        if effective is None:
+            return
+
+        when = effective - timedelta(minutes=alarm.pre_alarm_minutes)
+        if when <= dt_util.utcnow():
+            # Already inside the pre-alarm window; nothing sensible to run.
+            return
+
+        @callback
+        def _pre_fired(_now: datetime) -> None:
+            self._pre_timers.pop(alarm.id, None)
+            self.hass.async_create_task(self._async_handle_pre_timer(alarm.id))
+
+        self._pre_timers[alarm.id] = async_track_point_in_utc_time(
+            self.hass, _pre_fired, when
+        )
+        _LOGGER.debug("Scheduled pre-alarm for %s at %s", alarm.name, when)
+
+    async def _async_handle_pre_timer(self, alarm_id: str) -> None:
+        alarm = self.store.async_get(alarm_id)
+        if alarm is None or not alarm.enabled or alarm.skip_next or self._pre_fire is None:
+            return
+        await self._pre_fire(alarm)
 
     @callback
     def _cancel_all(self) -> None:
-        for unsub in self._timers.values():
-            unsub()
-        self._timers.clear()
+        for timers in (self._timers, self._pre_timers):
+            for unsub in timers.values():
+                unsub()
+            timers.clear()
 
     # --- handlers ----------------------------------------------------------
 
@@ -158,8 +202,9 @@ class WakeyScheduler:
 
     @callback
     def _schedule_one(self, alarm_id: str) -> None:
-        if (unsub := self._timers.pop(alarm_id, None)) is not None:
-            unsub()
+        for timers in (self._timers, self._pre_timers):
+            if (unsub := timers.pop(alarm_id, None)) is not None:
+                unsub()
         if (alarm := self.store.async_get(alarm_id)) is not None:
             self._schedule(alarm)
 

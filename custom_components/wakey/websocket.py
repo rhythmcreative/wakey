@@ -40,6 +40,8 @@ _FIELDS = {
     vol.Optional("fade_seconds"): vol.All(vol.Coerce(int), vol.Range(0, 3600)),
     vol.Optional("snooze_minutes"): vol.All(vol.Coerce(int), vol.Range(1, 120)),
     vol.Optional("auto_dismiss_minutes"): vol.All(vol.Coerce(int), vol.Range(1, 240)),
+    vol.Optional("pre_alarm_minutes"): vol.All(vol.Coerce(int), vol.Range(0, 240)),
+    vol.Optional("pre_alarm_script"): vol.Any(str, None),
 }
 
 

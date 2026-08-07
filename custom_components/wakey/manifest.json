@@ -1,10 +1,10 @@
 {
   "domain": "wakey",
   "name": "Wakey",
+  "after_dependencies": ["music_assistant", "media_player"],
   "codeowners": ["@johnrcarty"],
   "config_flow": true,
   "dependencies": [],
-  "after_dependencies": ["music_assistant", "media_player"],
   "documentation": "https://github.com/johnrcarty/wakey",
   "integration_type": "service",
   "iot_class": "calculated",

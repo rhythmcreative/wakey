@@ -4,7 +4,7 @@
   "after_dependencies": ["music_assistant", "media_player"],
   "codeowners": ["@johnrcarty"],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": ["http", "panel_custom", "websocket_api"],
   "documentation": "https://github.com/johnrcarty/wakey",
   "integration_type": "service",
   "iot_class": "calculated",

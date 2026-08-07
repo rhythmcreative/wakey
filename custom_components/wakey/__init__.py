@@ -20,9 +20,11 @@ from .const import (
     SIGNAL_ALARM_REMOVED,
     SOURCE_KINDS,
 )
+from .panel import async_register_panel, async_unregister_panel
 from .player import WakeyPlayer
 from .scheduler import WakeyScheduler
 from .store import WakeyStore
+from .websocket import async_register as async_register_websocket
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -109,6 +111,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     _async_register_services(hass)
+    async_register_websocket(hass)
+    await async_register_panel(hass)
     return True
 
 
@@ -122,6 +126,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     data.scheduler.async_stop()
     data.player.async_shutdown()
     await data.store.async_save_now()
+    async_unregister_panel(hass)
 
     if not hass.data[DOMAIN]:
         hass.data.pop(DOMAIN)

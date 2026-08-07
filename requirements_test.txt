@@ -1,1 +1,3 @@
 pytest-homeassistant-custom-component==0.13.348
+# panel_custom pulls in the frontend component, which imports hass_frontend.
+home-assistant-frontend==20260624.6

@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.3.0
+
+Clearing a ringing alarm no longer requires opening the panel.
+
+### Added
+
+- **Notify on ring.** Each alarm can name `notify.*` targets (Advanced
+  section of the alarm form). When it rings, they get a push with **Dismiss**
+  and **Snooze** action buttons; tapping the notification body opens the
+  Wakey panel. Action ids carry a per-ring token, so a notification left
+  over from an earlier ring can never act on the current one — the token is
+  also what authorises the action, since only a recipient of that exact
+  push can produce it.
+- **Voice snooze and cancel.** Saying "snooze", "cancel", "stop the alarm",
+  or "dismiss the alarm" to any Assist satellite snoozes or dismisses
+  everything currently ringing. Deliberately global — not scoped to an
+  alarm, satellite, or user — the same way a smart speaker's own "stop"
+  works. Wakey seeds `custom_sentences/en/wakey.yaml` in your config
+  directory at startup; add your own phrasings in a separate file alongside
+  it, which the conversation agent merges automatically.
+
 ## 0.2.0
 
 Wakey now knows who is using it.

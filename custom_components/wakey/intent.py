@@ -77,9 +77,17 @@ class _WakeyDismissIntent(intent.IntentHandler):
 
 
 async def async_setup_intents(hass: HomeAssistant) -> None:
-    """Register the snooze/dismiss intents and seed their trigger sentences."""
-    intent.async_register(hass, _WakeySnoozeIntent())
-    intent.async_register(hass, _WakeyDismissIntent())
+    """Register the snooze/dismiss intents and seed their trigger sentences.
+
+    Idempotent, like _async_register_services: Home Assistant may run entry
+    setup more than once in a boot, and re-registering an intent logs an
+    "is being overwritten" warning.
+    """
+    registered = {handler.intent_type for handler in intent.async_get(hass)}
+    if INTENT_SNOOZE not in registered:
+        intent.async_register(hass, _WakeySnoozeIntent())
+    if INTENT_DISMISS not in registered:
+        intent.async_register(hass, _WakeyDismissIntent())
 
     path = Path(hass.config.path("custom_sentences", "en", f"{DOMAIN}.yaml"))
 

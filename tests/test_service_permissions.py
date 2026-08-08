@@ -7,6 +7,7 @@ WebSocket gating.
 """
 
 import pytest
+from homeassistant.auth import EVENT_USER_REMOVED
 from homeassistant.core import Context, HomeAssistant
 from homeassistant.exceptions import ServiceValidationError, Unauthorized
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -135,6 +136,39 @@ async def test_a_deleted_user_is_refused(hass, entry) -> None:
             ALARM,
             blocking=True,
             context=Context(user_id="ghost-user"),
+        )
+
+
+async def test_removing_a_user_unassigns_their_alarms(hass, entry, kid_user) -> None:
+    """Alarms of a removed user must fall back to unowned, or 'assign all to
+    me' in the People tab can never reclaim them — it only matches a falsy
+    owner_id, and a removed user's id is neither empty nor reachable again."""
+    alarm = _store(hass).async_create({**ALARM, "owner_id": kid_user.id})
+
+    hass.bus.async_fire(EVENT_USER_REMOVED, {"user_id": kid_user.id})
+    await hass.async_block_till_done()
+
+    assert _store(hass).async_get(alarm.id).owner_id is None
+
+
+async def test_delete_service_errors_if_alarm_vanished_mid_dismiss(hass, entry) -> None:
+    """Service _delete awaits async_dismiss() before deleting from the store.
+    If the alarm is gone by the time that await returns, the service must not
+    silently succeed without having deleted anything."""
+    alarm = _store(hass).async_create(ALARM)
+    data = next(iter(hass.data[DOMAIN].values()))
+    real_dismiss = data.player.async_dismiss
+
+    async def _dismiss_and_vanish(*args, **kwargs):
+        result = await real_dismiss(*args, **kwargs)
+        data.store.async_delete(alarm.id)
+        return result
+
+    data.player.async_dismiss = _dismiss_and_vanish
+
+    with pytest.raises(ServiceValidationError):
+        await hass.services.async_call(
+            DOMAIN, "delete", {"alarm_id": alarm.id}, blocking=True
         )
 
 

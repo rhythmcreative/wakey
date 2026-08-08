@@ -201,6 +201,8 @@ def _make_user_cleanup(hass: HomeAssistant):
             return
         data.store.async_delete_policy(user_id)
         orphaned = data.store.async_for_owner(user_id)
+        for alarm in orphaned:
+            data.store.async_update(alarm.id, {ATTR_OWNER_ID: None})
         if orphaned:
             _LOGGER.warning(
                 "Home Assistant user %s was removed, leaving %d Wakey alarm(s) "
@@ -301,7 +303,8 @@ def _async_register_services(hass: HomeAssistant) -> None:
         except WakeyPermissionError as err:
             raise _denied(call, err) from err
         await data.player.async_dismiss(alarm_id, reason="deleted")
-        data.store.async_delete(alarm_id)
+        if not data.store.async_delete(alarm_id):
+            raise ServiceValidationError(f"No alarm with id {alarm_id}")
 
     async def _snooze(call: ServiceCall) -> None:
         if (data := _get_data(hass)) is None:

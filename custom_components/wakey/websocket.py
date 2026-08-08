@@ -301,7 +301,9 @@ async def ws_delete(hass, connection, msg) -> None:
     async_assert_can_modify(data.store, msg[ATTR_ALARM_ID], user_id, is_admin)
 
     await data.player.async_dismiss(msg[ATTR_ALARM_ID], reason="deleted")
-    data.store.async_delete(msg[ATTR_ALARM_ID])
+    if not data.store.async_delete(msg[ATTR_ALARM_ID]):
+        connection.send_error(msg["id"], ERR_NOT_FOUND, "No such alarm")
+        return
     connection.send_result(msg["id"])
 
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import uuid
 from dataclasses import dataclass, field
 from datetime import timedelta
 
@@ -52,6 +53,11 @@ class RingState:
     snoozed: bool = False
     attempts: int = 0
     unsubs: list[CALLBACK_TYPE] = field(default_factory=list)
+    # Identifies this specific ring, so a tap on a notification from a prior
+    # ring of the same alarm (e.g. before a snooze re-fires it) can't act on
+    # the current one. Full-length because it doubles as the authorization on
+    # the notification-action path, which has no other permission check.
+    token: str = field(default_factory=lambda: uuid.uuid4().hex)
 
     def cancel(self) -> None:
         for unsub in self.unsubs:
@@ -94,6 +100,7 @@ class WakeyPlayer:
         )
 
         await self._async_start_playback(alarm, state)
+        await self._async_send_ring_notification(alarm, state)
 
         # Failsafe: come back and check it actually started.
         state.unsubs.append(
@@ -139,6 +146,42 @@ class WakeyPlayer:
             # window, and waiting for it would delay nothing useful.
             await self._call(
                 "script", "turn_on", {ATTR_ENTITY_ID: alarm.pre_alarm_script}
+            )
+
+    async def _async_send_ring_notification(self, alarm: AlarmEntry, state: RingState) -> None:
+        """Push a dismiss/snooze-actionable notification for a ringing alarm.
+
+        The action ids carry the ring's token, so a tap on a notification from
+        a previous ring of this alarm (see mobile_app_notification_action in
+        __init__.py) can never act on the current one.
+        """
+        if not alarm.notify_targets:
+            return
+        data = {
+            "actions": [
+                {
+                    "action": f"{DOMAIN}_dismiss_{alarm.id}_{state.token}",
+                    "title": "Dismiss",
+                },
+                {
+                    "action": f"{DOMAIN}_snooze_{alarm.id}_{state.token}",
+                    "title": "Snooze",
+                },
+            ],
+            "clickAction": f"/{DOMAIN}",
+            "tag": f"{DOMAIN}_{alarm.id}",
+            "push": {"interruption-level": "time-sensitive"},
+        }
+        for target in alarm.notify_targets:
+            await self._call(
+                "notify",
+                "send_message",
+                {
+                    ATTR_ENTITY_ID: target,
+                    "message": f"{alarm.name} is ringing",
+                    "title": "Wakey",
+                    "data": data,
+                },
             )
 
     async def _async_start_playback(self, alarm: AlarmEntry, state: RingState) -> None:
@@ -329,6 +372,10 @@ class WakeyPlayer:
     async def async_dismiss_all(self) -> None:
         for alarm_id in list(self.ringing):
             await self.async_dismiss(alarm_id)
+
+    async def async_snooze_all(self) -> None:
+        for alarm_id in list(self.ringing):
+            await self.async_snooze(alarm_id)
 
     async def _stop_playback(self, alarm: AlarmEntry) -> None:
         current = self.hass.states.get(alarm.media_player)

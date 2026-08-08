@@ -110,6 +110,13 @@ create:
         entity:
           filter:
             domain: script
+    notify_targets:
+      required: false
+      selector:
+        entity:
+          multiple: true
+          filter:
+            domain: notify
     enabled:
       required: false
       default: true
@@ -215,6 +222,13 @@ update:
         entity:
           filter:
             domain: script
+    notify_targets:
+      required: false
+      selector:
+        entity:
+          multiple: true
+          filter:
+            domain: notify
     owner_id:
       required: false
       example: 8f1c2b3a4d5e6f7a8b9c0d1e2f3a4b5c

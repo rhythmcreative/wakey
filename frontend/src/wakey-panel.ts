@@ -172,6 +172,7 @@ export class WakeyPanel extends LitElement {
       auto_dismiss_minutes: Number(d.auto_dismiss_minutes ?? 30),
       pre_alarm_minutes: Number(d.pre_alarm_minutes ?? 0),
       pre_alarm_script: d.pre_alarm_script || null,
+      notify_targets: d.notify_targets ?? [],
     };
     if (this._editing) {
       await this._call({ type: "wakey/update", alarm_id: this._editing, ...payload });
@@ -250,6 +251,10 @@ export class WakeyPanel extends LitElement {
             name: "pre_alarm_script",
             selector: { entity: { filter: { domain: "script" } } },
           },
+          {
+            name: "notify_targets",
+            selector: { entity: { multiple: true, filter: { domain: "notify" } } },
+          },
         ],
       },
     ];
@@ -271,6 +276,7 @@ export class WakeyPanel extends LitElement {
       auto_dismiss_minutes: "Auto dismiss after",
       pre_alarm_minutes: "Pre-alarm lead time",
       pre_alarm_script: "Pre-alarm script",
+      notify_targets: "Notify on ring",
       advanced: "Advanced",
     })[s.name as string] ?? s.name;
 

@@ -51,6 +51,10 @@ EVENT_ALARM_FAILED = f"{DOMAIN}_alarm_failed"
 EVENT_ALARM_DISMISSED = f"{DOMAIN}_alarm_dismissed"
 EVENT_ALARM_SNOOZED = f"{DOMAIN}_alarm_snoozed"
 
+# Fired by the Home Assistant companion app when a notification action button
+# is tapped. Not ours to define — this is the app's own event name.
+EVENT_MOBILE_APP_NOTIFICATION_ACTION = "mobile_app_notification_action"
+
 # --- Alarm fields ----------------------------------------------------------
 ATTR_ALARM_ID = "alarm_id"
 ATTR_NAME = "name"

@@ -53,6 +53,15 @@ async def test_automation_calls_are_unrestricted_and_leave_the_alarm_unowned(
     assert alarms[0].owner_id is None
 
 
+async def test_service_create_accepts_notify_targets(hass, entry) -> None:
+    await hass.services.async_call(
+        DOMAIN, "create", {**ALARM, "notify_targets": ["notify.phone"]}, blocking=True
+    )
+    await hass.async_block_till_done()
+
+    assert _store(hass).async_all()[0].notify_targets == ["notify.phone"]
+
+
 async def test_an_automation_can_name_the_owner(hass, entry, kid_user) -> None:
     await hass.services.async_call(
         DOMAIN, "create", {**ALARM, "owner_id": kid_user.id}, blocking=True

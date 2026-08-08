@@ -6,6 +6,7 @@ from custom_components.wakey.store import (
     AlarmEntry,
     WakeyStore,
     coerce,
+    coerce_notify_targets,
     coerce_players,
 )
 
@@ -122,6 +123,24 @@ def test_coerce_players_keeps_only_speakers():
     ) == ["media_player.a", "media_player.b"]
     assert coerce_players(None) == []
     assert coerce_players("media_player.a") == []
+
+
+def test_coerce_notify_targets_keeps_only_notify_entities():
+    assert coerce_notify_targets(
+        ["notify.b", "light.kitchen", "notify.a", "notify.a"]
+    ) == ["notify.a", "notify.b"]
+    assert coerce_notify_targets(None) == []
+    assert coerce_notify_targets("notify.a") == []
+
+
+def test_coerce_wires_notify_targets_through():
+    assert coerce({"notify_targets": ["notify.b", "notify.a", "light.x"]})[
+        "notify_targets"
+    ] == ["notify.a", "notify.b"]
+
+
+def test_alarm_entry_default_notify_targets_is_empty():
+    assert AlarmEntry.from_dict({"id": "a"}).notify_targets == []
 
 
 async def test_policies_are_stored_alongside_alarms(hass):

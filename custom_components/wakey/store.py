@@ -42,6 +42,7 @@ STORAGE_VERSION_MINOR = 1
 SAVE_DELAY = 5
 
 MEDIA_PLAYER_PREFIX = "media_player."
+NOTIFY_PREFIX = "notify."
 
 
 @dataclass
@@ -67,6 +68,9 @@ class AlarmEntry:
     # lights, heating, and so on). 0 disables it.
     pre_alarm_minutes: int = DEFAULT_PRE_ALARM_MINUTES
     pre_alarm_script: str | None = None
+    # Notify entities (notify.*) to push an actionable dismiss/snooze alert to
+    # when this alarm rings. Empty means no notification is sent.
+    notify_targets: list[str] = field(default_factory=list)
     last_fired: str | None = None
     # The Home Assistant user this alarm belongs to. None means unowned —
     # created before multi-user support, or by an automation with no user
@@ -119,6 +123,15 @@ def coerce_players(players: Any) -> list[str]:
     )
 
 
+def coerce_notify_targets(targets: Any) -> list[str]:
+    """Normalise the notify-on-ring list: notify entities only, deduped and sorted."""
+    if not isinstance(targets, (list, tuple, set)):
+        return []
+    return sorted(
+        {t for t in targets if isinstance(t, str) and t.startswith(NOTIFY_PREFIX)}
+    )
+
+
 def coerce(data: dict[str, Any]) -> dict[str, Any]:
     """Validate and clamp incoming alarm fields.
 
@@ -157,6 +170,9 @@ def coerce(data: dict[str, Any]) -> dict[str, Any]:
             out["weekdays"] = sorted({int(d) for d in out["weekdays"] if 0 <= int(d) <= 6})
         except (TypeError, ValueError):
             out["weekdays"] = []
+
+    if "notify_targets" in out:
+        out["notify_targets"] = coerce_notify_targets(out["notify_targets"])
 
     if "owner_id" in out and out["owner_id"] is not None:
         owner = str(out["owner_id"]).strip()

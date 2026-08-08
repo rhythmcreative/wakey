@@ -6,7 +6,7 @@ from homeassistant.const import Platform
 
 DOMAIN = "wakey"
 NAME = "Wakey"
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
@@ -39,6 +39,10 @@ SIGNAL_ALARM_REMOVED = f"{DOMAIN}_alarm_removed"
 SIGNAL_ALARMS_CHANGED = f"{DOMAIN}_alarms_changed"
 # Fired when the ringing/snoozed runtime state changes.
 SIGNAL_RUNTIME_CHANGED = f"{DOMAIN}_runtime_changed"
+# Fired when a user's speaker permissions change. Deliberately separate from
+# SIGNAL_ALARMS_CHANGED: no alarm changed, so no entity needs to write state —
+# only subscribed panels need to re-render with the new allowlist.
+SIGNAL_POLICY_CHANGED = f"{DOMAIN}_policy_changed"
 
 # --- Events ----------------------------------------------------------------
 EVENT_PRE_ALARM = f"{DOMAIN}_pre_alarm"
@@ -66,6 +70,21 @@ ATTR_AUTO_DISMISS_MINUTES = "auto_dismiss_minutes"
 ATTR_PRE_ALARM_MINUTES = "pre_alarm_minutes"
 ATTR_PRE_ALARM_SCRIPT = "pre_alarm_script"
 ATTR_LAST_FIRED = "last_fired"
+# The Home Assistant user id that owns an alarm. None means unowned: alarms
+# that predate multi-user support, or ones created by an automation with no
+# user context. Unowned alarms are visible to administrators only.
+ATTR_OWNER_ID = "owner_id"
+
+# --- Permissions -----------------------------------------------------------
+ATTR_USER_ID = "user_id"
+ATTR_ALLOWED_MEDIA_PLAYERS = "allowed_media_players"
+
+# WebSocket error codes. Cross-owner access reports not_found rather than
+# unauthorized so a non-admin cannot probe for other people's alarm ids.
+ERR_NOT_FOUND = "not_found"
+ERR_NOT_LOADED = "not_loaded"
+ERR_PLAYER_NOT_ALLOWED = "player_not_allowed"
+ERR_INVALID_FORMAT = "invalid_format"
 
 # --- Enumerations ----------------------------------------------------------
 REPEAT_ONCE = "once"

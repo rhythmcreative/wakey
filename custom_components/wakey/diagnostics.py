@@ -28,12 +28,16 @@ async def async_get_config_entry_diagnostics(
         record["is_ringing"] = alarm.id in data.player.ringing
         alarms.append(record)
 
+    # Diagnostics downloads are admin-only, so the user ids in owner_id and in
+    # the policy keys are not being handed to anyone who could not already see
+    # them in the panel.
     return {
         "version": VERSION,
         "now_utc": dt_util.utcnow().isoformat(),
         "time_zone": hass.config.time_zone,
         "alarm_count": len(alarms),
         "alarms": alarms,
+        "policies": {p.user_id: p.to_dict() for p in data.store.async_all_policies()},
         "pending_timers": sorted(data.scheduler._timers.keys()),  # noqa: SLF001
         "pending_pre_alarm_timers": sorted(data.scheduler._pre_timers.keys()),  # noqa: SLF001
         "ringing": {

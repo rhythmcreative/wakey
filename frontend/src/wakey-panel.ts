@@ -1,30 +1,16 @@
 import { LitElement, css, html, nothing, type PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { DAY_LABELS, emptyDraft, type Alarm, type HomeAssistant, type Snapshot } from "./types";
+import {
+  DAY_LABELS,
+  emptyDraft,
+  ensureHaForm,
+  type Alarm,
+  type HomeAssistant,
+  type Snapshot,
+} from "./types";
+import "./wakey-admin";
 
 const DAY_OPTIONS = DAY_LABELS.map((label, i) => ({ value: String(i), label }));
-
-/**
- * Nudge Home Assistant into defining its lazily-loaded form elements.
- *
- * ha-form and the selector elements live in the frontend's editor bundle,
- * which is only pulled in on demand. loadCardHelpers is the documented hook
- * that forces it. Everything here is best-effort: if it fails the panel falls
- * back to plain inputs rather than rendering nothing.
- */
-async function ensureHaForm(): Promise<boolean> {
-  try {
-    const helpers = await (window as any).loadCardHelpers?.();
-    const card = await helpers?.createCardElement({ type: "entities", entities: [] });
-    await (card?.constructor as any)?.getConfigElement?.();
-  } catch {
-    /* non-fatal */
-  }
-  return Promise.race([
-    customElements.whenDefined("ha-form").then(() => true),
-    new Promise<boolean>((r) => setTimeout(() => r(false), 4000)),
-  ]);
-}
 
 @customElement("wakey-panel")
 export class WakeyPanel extends LitElement {
@@ -33,6 +19,9 @@ export class WakeyPanel extends LitElement {
   @property({ attribute: false }) public narrow = false;
 
   @state() private _alarms: Alarm[] = [];
+  @state() private _isAdmin = false;
+  @state() private _allowedPlayers: string[] | null = null;
+  @state() private _view: "alarms" | "admin" = "alarms";
   @state() private _loaded = false;
   @state() private _error: string | null = null;
   @state() private _dialogOpen = false;
@@ -65,6 +54,11 @@ export class WakeyPanel extends LitElement {
       this._unsub = await this.hass.connection.subscribeMessage<Snapshot>(
         (msg) => {
           this._alarms = msg.alarms ?? [];
+          // Trust the server's view of who this is over hass.user: it is the
+          // same value the API is actually enforcing with, so the buttons on
+          // screen cannot disagree with what the backend will allow.
+          this._isAdmin = msg.is_admin === true;
+          this._allowedPlayers = msg.allowed_media_players ?? null;
           this._loaded = true;
           this._error = null;
         },
@@ -76,8 +70,15 @@ export class WakeyPanel extends LitElement {
     }
   }
 
-  private get _isAdmin(): boolean {
-    return this.hass?.user?.is_admin !== false;
+  /**
+   * Whether this user has anywhere to point a new alarm.
+   *
+   * Speakers are deny-by-default, so a household member who has not been
+   * granted any cannot usefully create anything yet — and an Add button that
+   * always fails is worse than no Add button.
+   */
+  private get _canCreate(): boolean {
+    return this._allowedPlayers === null || this._allowedPlayers.length > 0;
   }
 
   // --- actions -----------------------------------------------------------
@@ -204,7 +205,17 @@ export class WakeyPanel extends LitElement {
       {
         name: "media_player",
         required: true,
-        selector: { entity: { filter: { domain: "media_player" } } },
+        selector: {
+          entity: {
+            filter: { domain: "media_player" },
+            // Omitted for admins, who are unrestricted. For everyone else
+            // this is the whole point: the picker only offers the speakers
+            // they were granted, so the refusal never has to happen.
+            ...(this._allowedPlayers
+              ? { include_entities: this._allowedPlayers }
+              : {}),
+          },
+        },
       },
       { name: "media", selector: { media: {} } },
       { name: "source_uri", required: true, selector: { text: {} } },
@@ -316,16 +327,14 @@ export class WakeyPanel extends LitElement {
               ${alarm.skip_next ? html`<span class="flag">Skipping next</span>` : nothing}
             </div>`
           : nothing}
-        ${this._isAdmin
-          ? html`<div class="actions">
+        ${html`<div class="actions">
               <button @click=${() => this._openEdit(alarm)}>Edit</button>
               <button @click=${() => this._skip(alarm)}>
                 ${alarm.skip_next ? "Don't skip" : "Skip next"}
               </button>
               <button @click=${() => this._trigger(alarm)}>Test</button>
               <button class="danger" @click=${() => this._delete(alarm)}>Delete</button>
-            </div>`
-          : nothing}
+            </div>`}
       </div>
     `;
   }
@@ -380,25 +389,57 @@ export class WakeyPanel extends LitElement {
     `;
   }
 
+  private _renderEmpty() {
+    if (!this._canCreate) {
+      return html`<div class="empty">
+        An administrator has not given you access to any speakers yet, so there is
+        nowhere for an alarm to play.
+      </div>`;
+    }
+    return html`<div class="empty">No alarms yet. Use Add alarm to create one.</div>`;
+  }
+
+  private _renderAlarms() {
+    if (!this._loaded) return html`<div class="empty">Loading…</div>`;
+    if (this._alarms.length === 0) return this._renderEmpty();
+    return this._alarms.map((a) => this._renderAlarm(a));
+  }
+
   protected render() {
+    const admin = this._view === "admin";
     return html`
       <div class="header">
         <h1>Wakey</h1>
         ${this._isAdmin
+          ? html`<div class="tabs">
+              <button
+                class=${admin ? "" : "selected"}
+                @click=${() => (this._view = "alarms")}
+              >
+                Alarms
+              </button>
+              <button
+                class=${admin ? "selected" : ""}
+                @click=${() => (this._view = "admin")}
+              >
+                People
+              </button>
+            </div>`
+          : nothing}
+        ${!admin && this._canCreate
           ? html`<button class="primary" @click=${this._openNew}>Add alarm</button>`
           : nothing}
       </div>
 
       <div class="body">
         ${this._error ? html`<div class="error">${this._error}</div>` : nothing}
-        ${this._renderRinging()}
-        ${!this._loaded
-          ? html`<div class="empty">Loading…</div>`
-          : this._alarms.length === 0
-            ? html`<div class="empty">
-                No alarms yet.${this._isAdmin ? " Use Add alarm to create one." : ""}
-              </div>`
-            : this._alarms.map((a) => this._renderAlarm(a))}
+        ${admin
+          ? html`<wakey-admin
+              .hass=${this.hass}
+              .alarms=${this._alarms}
+              .haForm=${this._haForm}
+            ></wakey-admin>`
+          : html`${this._renderRinging()} ${this._renderAlarms()}`}
       </div>
 
       ${this._renderDialog()}
@@ -517,6 +558,20 @@ export class WakeyPanel extends LitElement {
     }
     button.danger {
       color: var(--error-color, #db4437);
+    }
+    .tabs {
+      display: flex;
+      gap: 4px;
+    }
+    .tabs button {
+      color: inherit;
+      border-color: transparent;
+      opacity: 0.75;
+    }
+    .tabs button.selected {
+      opacity: 1;
+      border-bottom: 2px solid currentColor;
+      border-radius: 8px 8px 0 0;
     }
     .banner {
       display: flex;

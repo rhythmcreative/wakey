@@ -16,6 +16,8 @@ export interface Alarm {
   auto_dismiss_minutes: number;
   pre_alarm_minutes: number;
   pre_alarm_script: string | null;
+  /** The Home Assistant user this alarm belongs to. null means unowned. */
+  owner_id: string | null;
   next_fire: string | null;
   is_ringing: boolean;
   is_snoozed: boolean;
@@ -25,6 +27,28 @@ export interface Snapshot {
   alarms: Alarm[];
   ringing: string[];
   snoozed: string[];
+  user_id: string | null;
+  is_admin: boolean;
+  /** null means unrestricted; [] means an admin has granted nothing yet. */
+  allowed_media_players: string[] | null;
+}
+
+export interface WakeyUser {
+  id: string;
+  name: string;
+  is_admin: boolean;
+  is_owner: boolean;
+}
+
+export interface UserPolicy {
+  user_id: string;
+  allowed_media_players: string[];
+}
+
+export interface OrphanedAlarm {
+  id: string;
+  name: string;
+  media_player: string;
 }
 
 /** Only the bits of the HA object this panel actually touches. */
@@ -33,7 +57,7 @@ export interface HomeAssistant {
   locale: unknown;
   themes: unknown;
   language: string;
-  user?: { is_admin: boolean };
+  user?: { id: string; name: string; is_admin: boolean };
   callWS<T>(msg: Record<string, unknown>): Promise<T>;
   connection: {
     subscribeMessage<T>(
@@ -59,3 +83,25 @@ export const emptyDraft = (): Partial<Alarm> => ({
   auto_dismiss_minutes: 30,
   enabled: true,
 });
+
+/**
+ * Nudge Home Assistant into defining its lazily-loaded form elements.
+ *
+ * ha-form and the selector elements live in the frontend's editor bundle,
+ * which is only pulled in on demand. loadCardHelpers is the documented hook
+ * that forces it. Everything here is best-effort: if it fails the panel falls
+ * back to plain inputs rather than rendering nothing.
+ */
+export async function ensureHaForm(): Promise<boolean> {
+  try {
+    const helpers = await (window as any).loadCardHelpers?.();
+    const card = await helpers?.createCardElement({ type: "entities", entities: [] });
+    await (card?.constructor as any)?.getConfigElement?.();
+  } catch {
+    /* non-fatal */
+  }
+  return Promise.race([
+    customElements.whenDefined("ha-form").then(() => true),
+    new Promise<boolean>((r) => setTimeout(() => r(false), 4000)),
+  ]);
+}

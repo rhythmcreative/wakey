@@ -43,5 +43,6 @@ class WakeyTestButton(WakeyAlarmEntity, ButtonEntity):
         self._attr_unique_id = f"{alarm_id}_test"
 
     async def async_press(self) -> None:
+        await self.async_assert_may_control()
         if (alarm := self.alarm) is not None:
             await self._data.player.async_fire(alarm)

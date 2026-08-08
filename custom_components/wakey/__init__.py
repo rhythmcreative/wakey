@@ -6,14 +6,23 @@ import logging
 from dataclasses import dataclass
 
 import voluptuous as vol
+from homeassistant.auth import EVENT_USER_REMOVED
+from homeassistant.auth.models import User
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, ServiceCall, callback
+from homeassistant.core import Event, HomeAssistant, ServiceCall, callback
+from homeassistant.exceptions import (
+    HomeAssistantError,
+    ServiceValidationError,
+    Unauthorized,
+    UnknownUser,
+)
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 from .const import (
     ATTR_ALARM_ID,
+    ATTR_OWNER_ID,
     DOMAIN,
     PLATFORMS,
     REPEAT_MODES,
@@ -21,6 +30,14 @@ from .const import (
     SOURCE_KINDS,
 )
 from .panel import async_register_panel, async_unregister_panel
+from .permissions import (
+    AlarmNotVisible,
+    WakeyPermissionError,
+    async_assert_can_modify,
+    async_assert_player_allowed,
+    async_sanitize_payload,
+    async_visible_ringing,
+)
 from .player import WakeyPlayer
 from .scheduler import WakeyScheduler
 from .store import WakeyStore
@@ -54,6 +71,9 @@ _ALARM_FIELDS = {
     vol.Optional("auto_dismiss_minutes"): vol.All(vol.Coerce(int), vol.Range(1, 240)),
     vol.Optional("pre_alarm_minutes"): vol.All(vol.Coerce(int), vol.Range(0, 240)),
     vol.Optional("pre_alarm_script"): vol.Any(cv.entity_id, None),
+    # Lets an automation, which has no user of its own, say who an alarm
+    # belongs to. Ignored when a non-admin makes the call.
+    vol.Optional(ATTR_OWNER_ID): vol.Any(cv.string, None),
 }
 
 CREATE_SCHEMA = vol.Schema(
@@ -113,6 +133,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.async_on_unload(
         async_dispatcher_connect(hass, SIGNAL_ALARM_REMOVED, _make_device_cleanup(hass))
     )
+    entry.async_on_unload(
+        hass.bus.async_listen(EVENT_USER_REMOVED, _make_user_cleanup(hass))
+    )
 
     _async_register_services(hass)
     async_register_websocket(hass)
@@ -161,66 +184,182 @@ def _make_device_cleanup(hass: HomeAssistant):
 
 
 @callback
+def _make_user_cleanup(hass: HomeAssistant):
+    """Drop a deleted user's speaker policy and flag what they left behind.
+
+    Their alarms are deliberately not deleted — someone else in the house may
+    still be relying on one — but they become unowned, so only an admin can
+    see them. Say which, or they will simply be forgotten.
+    """
+
+    @callback
+    def _cleanup(event: Event) -> None:
+        if (data := _get_data(hass)) is None:
+            return
+        user_id = event.data.get("user_id")
+        if user_id is None:
+            return
+        data.store.async_delete_policy(user_id)
+        orphaned = data.store.async_for_owner(user_id)
+        for alarm in orphaned:
+            data.store.async_update(alarm.id, {ATTR_OWNER_ID: None})
+        if orphaned:
+            _LOGGER.warning(
+                "Home Assistant user %s was removed, leaving %d Wakey alarm(s) "
+                "with no owner (%s). They still fire, but only administrators "
+                "can see them",
+                user_id,
+                len(orphaned),
+                ", ".join(a.name for a in orphaned),
+            )
+
+    return _cleanup
+
+
+async def _async_caller(hass: HomeAssistant, call: ServiceCall) -> tuple[str | None, bool]:
+    """Who is making this service call, and are they an administrator?
+
+    context.user_id is None for automations, scripts fired by a trigger, and
+    the scheduler. Those are treated as system calls and are unrestricted —
+    the alternative would break every existing automation on upgrade, and an
+    automation has no user whose permissions could sensibly be applied.
+
+    Worth knowing: Home Assistant applies no permission check of its own to
+    plain domain services (only entity-targeted ones), so before this every
+    Wakey service was callable by any authenticated user.
+    """
+    user_id = call.context.user_id
+    if user_id is None:
+        return None, True
+    user: User | None = await hass.auth.async_get_user(user_id)
+    if user is None:
+        raise UnknownUser(context=call.context)
+    return user_id, user.is_admin
+
+
+@callback
 def _async_register_services(hass: HomeAssistant) -> None:
     """Register the domain services. Idempotent."""
     if hass.services.has_service(DOMAIN, SERVICE_CREATE):
         return
 
+    def _denied(call: ServiceCall, err: WakeyPermissionError) -> HomeAssistantError:
+        """Turn a permission denial into the right kind of service error.
+
+        An alarm the caller may not see is reported as simply missing — same
+        message a genuinely deleted alarm gets — so a non-admin cannot probe
+        for other people's alarm ids. Being refused a speaker is a real
+        authorisation failure and says so.
+        """
+        if isinstance(err, AlarmNotVisible):
+            return ServiceValidationError(str(err))
+        return Unauthorized(context=call.context, permission=str(err))
+
     async def _create(call: ServiceCall) -> None:
         if (data := _get_data(hass)) is None:
             return
-        alarm = data.store.async_create(dict(call.data))
+        user_id, is_admin = await _async_caller(hass, call)
+        payload = async_sanitize_payload(dict(call.data), is_admin)
+        try:
+            async_assert_player_allowed(
+                data.store, user_id, is_admin, payload.get("media_player") or ""
+            )
+        except WakeyPermissionError as err:
+            raise _denied(call, err) from err
+
+        if not is_admin:
+            payload[ATTR_OWNER_ID] = user_id
+        else:
+            # A system call with no owner_id leaves the alarm unowned rather
+            # than guessing. An admin acting in person owns what they create.
+            payload.setdefault(ATTR_OWNER_ID, user_id)
+
+        alarm = data.store.async_create(payload)
         _LOGGER.info("Created alarm %s (%s)", alarm.name, alarm.id)
 
     async def _update(call: ServiceCall) -> None:
         if (data := _get_data(hass)) is None:
             return
+        user_id, is_admin = await _async_caller(hass, call)
         changes = dict(call.data)
         alarm_id = changes.pop(ATTR_ALARM_ID)
-        if data.store.async_update(alarm_id, changes) is None:
-            _LOGGER.warning("No alarm with id %s", alarm_id)
+        try:
+            alarm = async_assert_can_modify(data.store, alarm_id, user_id, is_admin)
+            changes = async_sanitize_payload(changes, is_admin)
+            new_player = changes.get("media_player")
+            if new_player is not None and new_player != alarm.media_player:
+                async_assert_player_allowed(data.store, user_id, is_admin, new_player)
+        except WakeyPermissionError as err:
+            raise _denied(call, err) from err
+        data.store.async_update(alarm_id, changes)
 
     async def _delete(call: ServiceCall) -> None:
         if (data := _get_data(hass)) is None:
             return
+        user_id, is_admin = await _async_caller(hass, call)
         alarm_id = call.data[ATTR_ALARM_ID]
+        try:
+            async_assert_can_modify(data.store, alarm_id, user_id, is_admin)
+        except WakeyPermissionError as err:
+            raise _denied(call, err) from err
         await data.player.async_dismiss(alarm_id, reason="deleted")
         if not data.store.async_delete(alarm_id):
-            _LOGGER.warning("No alarm with id %s", alarm_id)
+            raise ServiceValidationError(f"No alarm with id {alarm_id}")
 
     async def _snooze(call: ServiceCall) -> None:
         if (data := _get_data(hass)) is None:
             return
+        user_id, is_admin = await _async_caller(hass, call)
         minutes = call.data.get("minutes")
         if (alarm_id := call.data.get(ATTR_ALARM_ID)) is not None:
+            try:
+                async_assert_can_modify(data.store, alarm_id, user_id, is_admin)
+            except WakeyPermissionError as err:
+                raise _denied(call, err) from err
             await data.player.async_snooze(alarm_id, minutes)
             return
-        # No target: snooze whatever is currently going off.
-        for ringing_id in list(data.player.ringing):
+        # No target: snooze whatever of the caller's is currently going off.
+        for ringing_id in async_visible_ringing(
+            data.store, data.player, user_id, is_admin
+        ):
             await data.player.async_snooze(ringing_id, minutes)
 
     async def _dismiss(call: ServiceCall) -> None:
         if (data := _get_data(hass)) is None:
             return
+        user_id, is_admin = await _async_caller(hass, call)
         if (alarm_id := call.data.get(ATTR_ALARM_ID)) is not None:
+            try:
+                async_assert_can_modify(data.store, alarm_id, user_id, is_admin)
+            except WakeyPermissionError as err:
+                raise _denied(call, err) from err
             await data.player.async_dismiss(alarm_id)
             return
-        await data.player.async_dismiss_all()
+        for ringing_id in async_visible_ringing(
+            data.store, data.player, user_id, is_admin
+        ):
+            await data.player.async_dismiss(ringing_id)
 
     async def _skip_next(call: ServiceCall) -> None:
         if (data := _get_data(hass)) is None:
             return
-        data.store.async_update(
-            call.data[ATTR_ALARM_ID], {"skip_next": call.data["skip"]}
-        )
+        user_id, is_admin = await _async_caller(hass, call)
+        alarm_id = call.data[ATTR_ALARM_ID]
+        try:
+            async_assert_can_modify(data.store, alarm_id, user_id, is_admin)
+        except WakeyPermissionError as err:
+            raise _denied(call, err) from err
+        data.store.async_update(alarm_id, {"skip_next": call.data["skip"]})
 
     async def _trigger_now(call: ServiceCall) -> None:
         if (data := _get_data(hass)) is None:
             return
-        alarm = data.store.async_get(call.data[ATTR_ALARM_ID])
-        if alarm is None:
-            _LOGGER.warning("No alarm with id %s", call.data[ATTR_ALARM_ID])
-            return
+        user_id, is_admin = await _async_caller(hass, call)
+        alarm_id = call.data[ATTR_ALARM_ID]
+        try:
+            alarm = async_assert_can_modify(data.store, alarm_id, user_id, is_admin)
+        except WakeyPermissionError as err:
+            raise _denied(call, err) from err
         await data.player.async_fire(alarm)
 
     for service, handler, schema in (

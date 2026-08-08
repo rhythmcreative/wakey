@@ -87,6 +87,32 @@ async def test_update_and_delete(hass, entry, hass_ws_client) -> None:
     assert data.store.async_get(alarm_id) is None
 
 
+async def test_delete_reports_not_found_if_alarm_vanished_mid_dismiss(
+    hass, entry, hass_ws_client
+) -> None:
+    """ws_delete awaits async_dismiss() before deleting from the store. If the
+    alarm is gone by the time that await returns (e.g. deleted by another
+    client in the meantime), the handler must not report success."""
+    client = await hass_ws_client(hass)
+    await client.send_json_auto_id({"type": "wakey/create", **ALARM})
+    alarm_id = (await client.receive_json())["result"]["alarm_id"]
+
+    data = hass.data[DOMAIN][entry.entry_id]
+    real_dismiss = data.player.async_dismiss
+
+    async def _dismiss_and_vanish(*args, **kwargs):
+        result = await real_dismiss(*args, **kwargs)
+        data.store.async_delete(alarm_id)
+        return result
+
+    data.player.async_dismiss = _dismiss_and_vanish
+
+    await client.send_json_auto_id({"type": "wakey/delete", "alarm_id": alarm_id})
+    msg = await client.receive_json()
+    assert not msg["success"]
+    assert msg["error"]["code"] == "not_found"
+
+
 async def test_update_unknown_alarm_errors(hass, entry, hass_ws_client) -> None:
     client = await hass_ws_client(hass)
     await client.send_json_auto_id({"type": "wakey/update", "alarm_id": "nope", "time": "05:45"})
@@ -95,20 +121,22 @@ async def test_update_unknown_alarm_errors(hass, entry, hass_ws_client) -> None:
     assert msg["error"]["code"] == "not_found"
 
 
-async def test_non_admin_cannot_create(
+async def test_non_admin_with_no_policy_cannot_create(
     hass, entry, hass_ws_client, hass_read_only_access_token
 ) -> None:
-    """Mutations are admin-only; reads are not."""
+    """Speakers are deny-by-default: no grant, no alarm."""
     client = await hass_ws_client(hass, hass_read_only_access_token)
 
     await client.send_json_auto_id({"type": "wakey/create", **ALARM})
     msg = await client.receive_json()
     assert not msg["success"]
-    assert msg["error"]["code"] == "unauthorized"
+    assert msg["error"]["code"] == "player_not_allowed"
 
-    # But a read-only user can still see the schedule.
+    # Reading is still fine — they just have nothing of their own to see.
     await client.send_json_auto_id({"type": "wakey/list"})
-    assert (await client.receive_json())["success"]
+    msg = await client.receive_json()
+    assert msg["success"]
+    assert msg["result"]["alarms"] == []
 
 
 async def test_skip_next_toggle(hass, entry, hass_ws_client) -> None:

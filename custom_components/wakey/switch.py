@@ -67,9 +67,11 @@ class WakeyAlarmSwitch(WakeyAlarmEntity, SwitchEntity):
         }
 
     async def async_turn_on(self, **kwargs) -> None:
+        await self.async_assert_may_control()
         self._data.store.async_update(self._alarm_id, {"enabled": True})
 
     async def async_turn_off(self, **kwargs) -> None:
+        await self.async_assert_may_control()
         self._data.store.async_update(self._alarm_id, {"enabled": False})
         await self._data.player.async_dismiss(self._alarm_id, reason="disabled")
 
@@ -96,7 +98,9 @@ class WakeySkipNextSwitch(WakeyAlarmEntity, SwitchEntity):
         return bool(alarm and alarm.skip_next)
 
     async def async_turn_on(self, **kwargs) -> None:
+        await self.async_assert_may_control()
         self._data.store.async_update(self._alarm_id, {"skip_next": True})
 
     async def async_turn_off(self, **kwargs) -> None:
+        await self.async_assert_may_control()
         self._data.store.async_update(self._alarm_id, {"skip_next": False})

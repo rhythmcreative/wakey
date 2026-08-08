@@ -51,6 +51,9 @@ Bug reports are very welcome.
 - **Native entities.** Every alarm is a device with its own switch, editable
   time, and next-fire sensor, so alarms work with normal automations,
   dashboards and voice — not just inside Wakey.
+- **One list each.** Alarms belong to the person who made them. Everyone gets
+  their own list, and an admin decides which speakers each person may use — so
+  nobody can set a 3am alarm on someone else's bedroom speaker.
 
 ## Requirements
 
@@ -94,6 +97,34 @@ data:
   pre_alarm_minutes: 15
   pre_alarm_script: script.sunrise_lights
 ```
+
+## Users and permissions
+
+Every alarm belongs to the Home Assistant user who created it. You see your own
+alarms and nobody else's; administrators see everyone's.
+
+Speakers are **deny-by-default**. A new household member can open Wakey but has
+nowhere to point an alarm until an administrator grants them one. Go to
+**Wakey → People** and pick the speakers each person may use. Administrators are
+never restricted.
+
+The same screen shows who owns what, and lets you hand an alarm to someone else.
+
+**After upgrading from 0.1.x**, alarms that already existed have no owner, so
+only administrators can see them. The People screen offers a one-click *Assign
+all to me* to fix that. They keep firing either way.
+
+### What this does and does not protect against
+
+It stops someone setting, editing, firing or silencing an alarm that isn't
+theirs, from the panel, from the actions, or from the alarm's own entities.
+
+It does **not** hide alarms completely. Home Assistant gives every non-read-only
+user read access to every entity state, so another household member can still
+*see* that `switch.dads_alarm` exists and what time it is set to — they just
+can't touch it. Nor does the speaker allowlist restrict the speaker itself: it
+governs Wakey alarms, not `media_player.play_media`. Someone determined can
+still play music on any speaker directly, exactly as they always could.
 
 ## Actions
 

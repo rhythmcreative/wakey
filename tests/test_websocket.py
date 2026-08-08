@@ -95,20 +95,22 @@ async def test_update_unknown_alarm_errors(hass, entry, hass_ws_client) -> None:
     assert msg["error"]["code"] == "not_found"
 
 
-async def test_non_admin_cannot_create(
+async def test_non_admin_with_no_policy_cannot_create(
     hass, entry, hass_ws_client, hass_read_only_access_token
 ) -> None:
-    """Mutations are admin-only; reads are not."""
+    """Speakers are deny-by-default: no grant, no alarm."""
     client = await hass_ws_client(hass, hass_read_only_access_token)
 
     await client.send_json_auto_id({"type": "wakey/create", **ALARM})
     msg = await client.receive_json()
     assert not msg["success"]
-    assert msg["error"]["code"] == "unauthorized"
+    assert msg["error"]["code"] == "player_not_allowed"
 
-    # But a read-only user can still see the schedule.
+    # Reading is still fine — they just have nothing of their own to see.
     await client.send_json_auto_id({"type": "wakey/list"})
-    assert (await client.receive_json())["success"]
+    msg = await client.receive_json()
+    assert msg["success"]
+    assert msg["result"]["alarms"] == []
 
 
 async def test_skip_next_toggle(hass, entry, hass_ws_client) -> None:

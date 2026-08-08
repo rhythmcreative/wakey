@@ -1,5 +1,44 @@
 # Changelog
 
+## 0.2.0
+
+Wakey now knows who is using it.
+
+### Added
+
+- **Per-user alarms.** Every alarm belongs to the Home Assistant user who
+  created it. You see your own; administrators see everyone's.
+- **Speaker permissions**, deny-by-default. An administrator grants each person
+  the speakers they may point an alarm at, in the new **People** screen in the
+  panel. Nobody can set an alarm on a speaker they were not given.
+- The same screen assigns ownership of existing alarms, with a one-click
+  *Assign all to me* for the ones left unowned by the upgrade.
+- `owner_id` on `wakey.create` and `wakey.update`, so an automation — which has
+  no user of its own — can say who an alarm is for.
+
+### Changed
+
+- **Non-administrators can now create, edit and delete their own alarms.**
+  Previously all mutations were admin-only.
+- `wakey.trigger_now`, `skip_next`, `snooze` and `dismiss` are now permission
+  checked. They were not before: Home Assistant applies no permission check to
+  plain domain services, so any authenticated user could fire any alarm.
+- The untargeted "snooze/dismiss whatever is ringing" now means *whatever of
+  mine is ringing* for non-administrators. Administrators still reach all of it.
+- `switch.<alarm>`, `time.<alarm>_time` and `button.<alarm>_test` refuse a user
+  who does not own the alarm. Automations, scripts and the scheduler — which
+  carry no user — are unaffected.
+- Storage schema 1.0 → 1.1.
+
+### Upgrading
+
+Alarms that already exist become **unowned**: they keep firing exactly as
+before, but only administrators can see or edit them until someone is assigned
+in the panel's People screen.
+
+Downgrading to 0.1.x is safe for your alarms but discards ownership and
+permission data — the older code drops both on its next save.
+
 ## 0.1.0
 
 First release.
@@ -31,4 +70,4 @@ First release.
   transition instant rather than an hour late, and the repeated hour on
   fall-back rings exactly once. Both are unit tested.
 - The panel is not admin-only. Creating and editing alarms is, but viewing the
-  schedule and snoozing are not.
+  schedule and snoozing are not. (Superseded in 0.2.0 — see above.)

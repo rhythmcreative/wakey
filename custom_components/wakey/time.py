@@ -59,6 +59,7 @@ class WakeyAlarmTime(WakeyAlarmEntity, TimeEntity):
             return None
 
     async def async_set_value(self, value: dt_time) -> None:
+        await self.async_assert_may_control()
         # The store compares before writing, so setting the same value again
         # is a no-op and cannot bounce back here as another update.
         self._data.store.async_update(

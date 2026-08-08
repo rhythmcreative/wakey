@@ -2,7 +2,12 @@
 
 from unittest.mock import patch
 
-from custom_components.wakey.store import AlarmEntry, WakeyStore, coerce
+from custom_components.wakey.store import (
+    AlarmEntry,
+    WakeyStore,
+    coerce,
+    coerce_players,
+)
 
 
 async def test_create_assigns_id_and_persists(hass):
@@ -103,3 +108,51 @@ def test_from_dict_ignores_unknown_keys():
     alarm = AlarmEntry.from_dict({"id": "a", "name": "x", "bogus": 1})
     assert alarm.id == "a"
     assert not hasattr(alarm, "bogus")
+
+
+def test_coerce_normalises_owner_id():
+    assert coerce({"owner_id": "  abc  "})["owner_id"] == "abc"
+    assert coerce({"owner_id": ""})["owner_id"] is None
+    assert coerce({"owner_id": None})["owner_id"] is None
+
+
+def test_coerce_players_keeps_only_speakers():
+    assert coerce_players(
+        ["media_player.b", "light.kitchen", "media_player.a", "media_player.a"]
+    ) == ["media_player.a", "media_player.b"]
+    assert coerce_players(None) == []
+    assert coerce_players("media_player.a") == []
+
+
+async def test_policies_are_stored_alongside_alarms(hass):
+    store = WakeyStore(hass)
+    await store.async_load()
+    store.async_create({"name": "A", "time": "07:00"})
+    store.async_set_policy("user-1", ["media_player.den", "light.x"])
+
+    saved = store._data_to_save()
+
+    assert saved["policies"] == {
+        "user-1": {"user_id": "user-1", "allowed_media_players": ["media_player.den"]}
+    }
+    assert saved["alarms"][0]["owner_id"] is None
+
+
+async def test_delete_policy_reports_whether_there_was_one(hass):
+    store = WakeyStore(hass)
+    await store.async_load()
+
+    assert store.async_delete_policy("nobody") is False
+    store.async_set_policy("user-1", [])
+    assert store.async_delete_policy("user-1") is True
+    assert store.async_get_policy("user-1") is None
+
+
+async def test_for_owner_separates_users_and_legacy_alarms(hass):
+    store = WakeyStore(hass)
+    await store.async_load()
+    mine = store.async_create({"name": "Mine", "time": "07:00", "owner_id": "user-1"})
+    legacy = store.async_create({"name": "Legacy", "time": "08:00"})
+
+    assert [a.id for a in store.async_for_owner("user-1")] == [mine.id]
+    assert [a.id for a in store.async_for_owner(None)] == [legacy.id]

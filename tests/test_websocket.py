@@ -113,6 +113,32 @@ async def test_delete_reports_not_found_if_alarm_vanished_mid_dismiss(
     assert msg["error"]["code"] == "not_found"
 
 
+async def test_create_and_update_notify_targets(hass, entry, hass_ws_client) -> None:
+    client = await hass_ws_client(hass)
+    await client.send_json_auto_id(
+        {"type": "wakey/create", **ALARM, "notify_targets": ["notify.phone"]}
+    )
+    msg = await client.receive_json()
+    assert msg["success"]
+    alarm_id = msg["result"]["alarm_id"]
+
+    data = hass.data[DOMAIN][entry.entry_id]
+    assert data.store.async_get(alarm_id).notify_targets == ["notify.phone"]
+
+    await client.send_json_auto_id(
+        {
+            "type": "wakey/update",
+            "alarm_id": alarm_id,
+            "notify_targets": ["notify.phone", "notify.tablet"],
+        }
+    )
+    assert (await client.receive_json())["success"]
+    assert data.store.async_get(alarm_id).notify_targets == [
+        "notify.phone",
+        "notify.tablet",
+    ]
+
+
 async def test_update_unknown_alarm_errors(hass, entry, hass_ws_client) -> None:
     client = await hass_ws_client(hass)
     await client.send_json_auto_id({"type": "wakey/update", "alarm_id": "nope", "time": "05:45"})

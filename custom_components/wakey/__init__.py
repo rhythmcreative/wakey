@@ -24,11 +24,13 @@ from .const import (
     ATTR_ALARM_ID,
     ATTR_OWNER_ID,
     DOMAIN,
+    EVENT_MOBILE_APP_NOTIFICATION_ACTION,
     PLATFORMS,
     REPEAT_MODES,
     SIGNAL_ALARM_REMOVED,
     SOURCE_KINDS,
 )
+from .intent import async_remove_intents, async_setup_intents
 from .panel import async_register_panel, async_unregister_panel
 from .permissions import (
     AlarmNotVisible,
@@ -71,6 +73,7 @@ _ALARM_FIELDS = {
     vol.Optional("auto_dismiss_minutes"): vol.All(vol.Coerce(int), vol.Range(1, 240)),
     vol.Optional("pre_alarm_minutes"): vol.All(vol.Coerce(int), vol.Range(0, 240)),
     vol.Optional("pre_alarm_script"): vol.Any(cv.entity_id, None),
+    vol.Optional("notify_targets"): vol.All(cv.ensure_list, [cv.entity_id]),
     # Lets an automation, which has no user of its own, say who an alarm
     # belongs to. Ignored when a non-admin makes the call.
     vol.Optional(ATTR_OWNER_ID): vol.Any(cv.string, None),
@@ -136,10 +139,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.async_on_unload(
         hass.bus.async_listen(EVENT_USER_REMOVED, _make_user_cleanup(hass))
     )
+    entry.async_on_unload(
+        hass.bus.async_listen(
+            EVENT_MOBILE_APP_NOTIFICATION_ACTION,
+            _make_notification_action_handler(hass),
+        )
+    )
 
     _async_register_services(hass)
     async_register_websocket(hass)
     await async_register_panel(hass)
+    await async_setup_intents(hass)
     return True
 
 
@@ -154,6 +164,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     data.player.async_shutdown()
     await data.store.async_save_now()
     async_unregister_panel(hass)
+    async_remove_intents(hass)
 
     if not hass.data[DOMAIN]:
         hass.data.pop(DOMAIN)
@@ -214,6 +225,55 @@ def _make_user_cleanup(hass: HomeAssistant):
             )
 
     return _cleanup
+
+
+def _parse_notification_action(action: str) -> tuple[str, str, str] | None:
+    """Parse a Wakey notification action id into (kind, alarm_id, token).
+
+    Action ids look like "wakey_dismiss_<alarm_id>_<token>" or
+    "wakey_snooze_<alarm_id>_<token>" (see player.py's
+    _async_send_ring_notification). Anything else is not ours to handle. Token
+    is split off with rpartition rather than a fixed separator count, since
+    alarm ids are themselves plain hex and never contain an underscore.
+    """
+    for kind, prefix in (
+        ("dismiss", f"{DOMAIN}_dismiss_"),
+        ("snooze", f"{DOMAIN}_snooze_"),
+    ):
+        if action.startswith(prefix):
+            alarm_id, _, token = action[len(prefix) :].rpartition("_")
+            if alarm_id and token:
+                return kind, alarm_id, token
+    return None
+
+
+def _make_notification_action_handler(hass: HomeAssistant):
+    """Route a tapped notification action back to dismiss/snooze.
+
+    No ownership check: the action id itself is the authorisation. It is
+    opaque and scoped to one specific ring (via the token), so only someone
+    who actually received that push could have produced it.
+    """
+
+    async def _handle(event: Event) -> None:
+        if (parsed := _parse_notification_action(event.data.get("action", ""))) is None:
+            return
+        if (data := _get_data(hass)) is None:
+            return
+        kind, alarm_id, token = parsed
+        state = data.player.ringing.get(alarm_id)
+        if state is None or state.token != token:
+            _LOGGER.debug(
+                "Ignoring stale or unknown Wakey notification action for alarm %s",
+                alarm_id,
+            )
+            return
+        if kind == "dismiss":
+            await data.player.async_dismiss(alarm_id, reason="notification")
+        else:
+            await data.player.async_snooze(alarm_id)
+
+    return _handle
 
 
 async def _async_caller(hass: HomeAssistant, call: ServiceCall) -> tuple[str | None, bool]:

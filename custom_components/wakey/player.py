@@ -55,8 +55,9 @@ class RingState:
     unsubs: list[CALLBACK_TYPE] = field(default_factory=list)
     # Identifies this specific ring, so a tap on a notification from a prior
     # ring of the same alarm (e.g. before a snooze re-fires it) can't act on
-    # the current one.
-    token: str = field(default_factory=lambda: uuid.uuid4().hex[:8])
+    # the current one. Full-length because it doubles as the authorization on
+    # the notification-action path, which has no other permission check.
+    token: str = field(default_factory=lambda: uuid.uuid4().hex)
 
     def cancel(self) -> None:
         for unsub in self.unsubs:

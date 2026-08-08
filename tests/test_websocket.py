@@ -138,6 +138,14 @@ async def test_create_and_update_notify_targets(hass, entry, hass_ws_client) -> 
         "notify.tablet",
     ]
 
+    # A bare string is promoted to a one-element list, matching the service
+    # schema, rather than being rejected (or iterated as characters).
+    await client.send_json_auto_id(
+        {"type": "wakey/update", "alarm_id": alarm_id, "notify_targets": "notify.phone"}
+    )
+    assert (await client.receive_json())["success"]
+    assert data.store.async_get(alarm_id).notify_targets == ["notify.phone"]
+
 
 async def test_update_unknown_alarm_errors(hass, entry, hass_ws_client) -> None:
     client = await hass_ws_client(hass)

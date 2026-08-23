@@ -273,7 +273,9 @@ export class WakeyPanel extends LitElement {
       },
       {
         type: "expandable",
-        name: "advanced",
+        // Deliberately unnamed: a named expandable makes ha-form nest its
+        // fields under draft.advanced, while everything here reads and saves
+        // them flat — the section would render empty and wipe on save.
         title: "Advanced",
         schema: [
           {

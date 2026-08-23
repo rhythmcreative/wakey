@@ -1,6 +1,22 @@
 # Changelog
 
-## 0.5.0
+## 0.5.1
+
+### Fixed
+
+- **Alarms now play on speakers Music Assistant does not manage** (#9).
+  Alarms created in the panel were hardwired to `music_assistant.play_media`,
+  which silently matches nothing when the target player belongs to another
+  integration — a Google/Cast speaker would chirp as the session opened and
+  then stay quiet. Playback now falls back to plain
+  `media_player.play_media` when Music Assistant is not installed, when the
+  target player is not a Music Assistant player, or when the source is a
+  browsed `media-source://` pick that Music Assistant cannot resolve.
+- **The Advanced section of the alarm editor kept and showed its values** —
+  it previously rendered empty no matter what had been saved, and every save
+  silently reset the pre-alarm script, snooze length, auto-dismiss, notify
+  targets and resume-previous to defaults (#10). If you saved an alarm while
+  this bug was present, re-enter those settings once.
 
 ### Added
 

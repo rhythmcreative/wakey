@@ -21,6 +21,7 @@ from homeassistant.const import (
     STATE_UNKNOWN,
 )
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
 from homeassistant.util import dt as dt_util
@@ -231,7 +232,7 @@ class WakeyPlayer:
             {ATTR_ENTITY_ID: player, "volume_level": start_volume},
         )
 
-        if alarm.source_kind == SOURCE_MUSIC_ASSISTANT:
+        if self._use_music_assistant(alarm):
             # media_type is deliberately omitted: the stored value may be a
             # track, album or playlist URI, and Music Assistant resolves the
             # type from the URI itself. Forcing "track" breaks the others.
@@ -261,6 +262,41 @@ class WakeyPlayer:
         if alarm.fade_seconds > 0:
             self._start_fade(alarm, state, start_volume)
 
+    @callback
+    def _use_music_assistant(self, alarm: AlarmEntry) -> bool:
+        """Whether this alarm can actually ring through Music Assistant.
+
+        The panel stores source_kind=music_assistant by default, but blindly
+        calling music_assistant.play_media silently does nothing when Music
+        Assistant is not installed, when the target is some other integration's
+        player (its services only match its own entities — a Cast speaker just
+        chirps and stays quiet), or when the browsed pick is a media-source URI
+        Music Assistant cannot resolve. Any of those routes through the plain
+        media_player path instead, which every player understands.
+        """
+        if alarm.source_kind != SOURCE_MUSIC_ASSISTANT:
+            return False
+        if alarm.source_uri.startswith("media-source://"):
+            return False
+        if not self.hass.services.has_service(SOURCE_MUSIC_ASSISTANT, "play_media"):
+            _LOGGER.debug(
+                "Music Assistant is not installed — playing %s via media_player",
+                alarm.name,
+            )
+            return False
+        entry = er.async_get(self.hass).async_get(alarm.media_player)
+        # Only override on positive evidence: an unregistered entity (template
+        # players, tests) keeps whatever the alarm says.
+        if entry is not None and entry.platform != SOURCE_MUSIC_ASSISTANT:
+            _LOGGER.debug(
+                "%s belongs to %s, not Music Assistant — playing %s via media_player",
+                alarm.media_player,
+                entry.platform,
+                alarm.name,
+            )
+            return False
+        return True
+
     # --- resume ------------------------------------------------------------
 
     async def _async_capture_resume(self, alarm: AlarmEntry, state: RingState) -> None:
@@ -271,7 +307,9 @@ class WakeyPlayer:
         be resumed from must still be an alarm that reliably plays.
         """
         state.resume_checked = True
-        if not alarm.resume_previous or alarm.source_kind != SOURCE_MUSIC_ASSISTANT:
+        # Restoring goes through Music Assistant's queue, so an alarm that will
+        # not ring through it has nothing it could safely put back.
+        if not alarm.resume_previous or not self._use_music_assistant(alarm):
             return
 
         current = self.hass.states.get(alarm.media_player)

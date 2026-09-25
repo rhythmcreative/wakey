@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.2
+
+### Added
+
+- **Repeat playback option for alarms (`repeat_count`).**
+  Alarms can now loop their audio track continuously or repeat a configured number of times:
+  - `0` (default): Loop playback continuously until the alarm is dismissed or snoozed.
+  - `1`: Play once (no repeating loops).
+  - `N`: Repeat playback up to N times total.
+  Configurable in the panel UI (under Advanced), via WebSocket API, and in `wakey.create`/`wakey.update` services.
+
+### Fixed
+
+- **Track playback ending prematurely.** Automatically detects when single audio tracks finish playing and loops playback seamlessly while the alarm is actively ringing.
+- **Home Assistant Core 2026 async compatibility.** Replaced thread-unsafe lambda tasks with proper coroutine handlers in scheduled callbacks.
+
 ## 0.5.1
 
 ### Fixed

@@ -295,7 +295,7 @@ class U {
       if (r.nodeType === 1) {
         if (r.hasAttributes()) for (const h of r.getAttributeNames()) if (h.endsWith(le)) {
           const y = m[o++], v = r.getAttribute(h).split(b), D = /([.?@])?(.*)/.exec(y);
-          n.push({ type: 1, index: a, name: D[2], strings: v, ctor: D[1] === "." ? Pe : D[1] === "?" ? Oe : D[1] === "@" ? je : W }), r.removeAttribute(h);
+          n.push({ type: 1, index: a, name: D[2], strings: v, ctor: D[1] === "." ? Ce : D[1] === "?" ? Oe : D[1] === "@" ? je : W }), r.removeAttribute(h);
         } else h.startsWith(b) && (n.push({ type: 6, index: a }), r.removeAttribute(h));
         if (ce.test(r.tagName)) {
           const h = r.textContent.split(b), y = h.length - 1;
@@ -318,13 +318,13 @@ class U {
     return i.innerHTML = e, i;
   }
 }
-function C(t, e, s = t, i) {
+function P(t, e, s = t, i) {
   if (e === E) return e;
   let r = i !== void 0 ? s._$Co?.[i] : s._$Cl;
   const a = N(e) ? void 0 : e._$litDirective$;
-  return r?.constructor !== a && (r?._$AO?.(!1), a === void 0 ? r = void 0 : (r = new a(t), r._$AT(t, s, i)), i !== void 0 ? (s._$Co ??= [])[i] = r : s._$Cl = r), r !== void 0 && (e = C(t, r._$AS(t, e.values), r, i)), e;
+  return r?.constructor !== a && (r?._$AO?.(!1), a === void 0 ? r = void 0 : (r = new a(t), r._$AT(t, s, i)), i !== void 0 ? (s._$Co ??= [])[i] = r : s._$Cl = r), r !== void 0 && (e = P(t, r._$AS(t, e.values), r, i)), e;
 }
-class Ce {
+class Pe {
   constructor(e, s) {
     this._$AV = [], this._$AN = void 0, this._$AD = e, this._$AM = s;
   }
@@ -371,7 +371,7 @@ class z {
     return this._$AB;
   }
   _$AI(e, s = this) {
-    e = C(this, e, s), N(e) ? e === d || e == null || e === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : e !== this._$AH && e !== E && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : ke(e) ? this.k(e) : this._(e);
+    e = P(this, e, s), N(e) ? e === d || e == null || e === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : e !== this._$AH && e !== E && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : ke(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -386,7 +386,7 @@ class z {
     const { values: s, _$litType$: i } = e, r = typeof i == "number" ? this._$AC(e) : (i.el === void 0 && (i.el = U.createElement(he(i.h, i.h[0]), this.options)), i);
     if (this._$AH?._$AD === r) this._$AH.p(s);
     else {
-      const a = new Ce(r, this), o = a.u(this.options);
+      const a = new Pe(r, this), o = a.u(this.options);
       a.p(s), this.T(o), this._$AH = a;
     }
   }
@@ -424,11 +424,11 @@ class W {
   _$AI(e, s = this, i, r) {
     const a = this.strings;
     let o = !1;
-    if (a === void 0) e = C(this, e, s, 0), o = !N(e) || e !== this._$AH && e !== E, o && (this._$AH = e);
+    if (a === void 0) e = P(this, e, s, 0), o = !N(e) || e !== this._$AH && e !== E, o && (this._$AH = e);
     else {
       const c = e;
       let n, p;
-      for (e = a[0], n = 0; n < a.length - 1; n++) p = C(this, c[i + n], s, n), p === E && (p = this._$AH[n]), o ||= !N(p) || p !== this._$AH[n], p === d ? e = d : e !== d && (e += (p ?? "") + a[n + 1]), this._$AH[n] = p;
+      for (e = a[0], n = 0; n < a.length - 1; n++) p = P(this, c[i + n], s, n), p === E && (p = this._$AH[n]), o ||= !N(p) || p !== this._$AH[n], p === d ? e = d : e !== d && (e += (p ?? "") + a[n + 1]), this._$AH[n] = p;
     }
     o && !r && this.j(e);
   }
@@ -436,7 +436,7 @@ class W {
     e === d ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
   }
 }
-class Pe extends W {
+class Ce extends W {
   constructor() {
     super(...arguments), this.type = 3;
   }
@@ -457,7 +457,7 @@ class je extends W {
     super(e, s, i, r, a), this.type = 5;
   }
   _$AI(e, s = this) {
-    if ((e = C(this, e, s, 0) ?? d) === E) return;
+    if ((e = P(this, e, s, 0) ?? d) === E) return;
     const i = this._$AH, r = e === d && i !== d || e.capture !== i.capture || e.once !== i.once || e.passive !== i.passive, a = e !== d && (i === d || r);
     r && this.element.removeEventListener(this.name, this, i), a && this.element.addEventListener(this.name, this, e), this._$AH = e;
   }
@@ -473,7 +473,7 @@ class Te {
     return this._$AM._$AU;
   }
   _$AI(e) {
-    C(this, e);
+    P(this, e);
   }
 }
 const Ne = V.litHtmlPolyfillSupport;
@@ -555,7 +555,7 @@ const De = { attribute: !0, type: String, converter: H, reflect: !1, hasChanged:
   }
   throw Error("Unsupported decorator location: " + i);
 };
-function P(t) {
+function C(t) {
   return (e, s) => typeof s == "object" ? Me(t, e, s) : ((i, r, a) => {
     const o = r.hasOwnProperty(a);
     return r.constructor.createProperty(a, i), o ? Object.getOwnPropertyDescriptor(r, a) : void 0;
@@ -567,7 +567,7 @@ function P(t) {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 function _(t) {
-  return P({ ...t, state: !0, attribute: !1 });
+  return C({ ...t, state: !0, attribute: !1 });
 }
 const ue = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], He = () => ({
   name: "Alarm",
@@ -583,6 +583,7 @@ const ue = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], He = () => ({
   auto_dismiss_minutes: 30,
   enabled: !0,
   notify_targets: [],
+  repeat_count: 0,
   resume_previous: !1
 });
 async function Re() {
@@ -871,13 +872,13 @@ g.styles = ne`
     }
   `;
 $([
-  P({ attribute: !1 })
+  C({ attribute: !1 })
 ], g.prototype, "hass", 2);
 $([
-  P({ attribute: !1 })
+  C({ attribute: !1 })
 ], g.prototype, "alarms", 2);
 $([
-  P({ attribute: !1 })
+  C({ attribute: !1 })
 ], g.prototype, "haForm", 2);
 $([
   _()
@@ -921,6 +922,7 @@ let u = class extends S {
       pre_alarm_minutes: "Pre-alarm lead time",
       pre_alarm_script: "Pre-alarm script",
       notify_targets: "Notify on ring",
+      repeat_count: "Playback repeats (0 = continuous)",
       resume_previous: "Resume previous playback",
       advanced: "Advanced"
     })[t.name] ?? t.name;
@@ -1038,7 +1040,8 @@ let u = class extends S {
       auto_dismiss_minutes: Number(t.auto_dismiss_minutes ?? 30),
       pre_alarm_minutes: Number(t.pre_alarm_minutes ?? 0),
       pre_alarm_script: t.pre_alarm_script || null,
-      notify_targets: t.notify_targets ?? []
+      notify_targets: t.notify_targets ?? [],
+      repeat_count: Number(t.repeat_count ?? 0)
     };
     this._editing ? await this._call({ type: "wakey/update", alarm_id: this._editing, ...e }) : await this._call({ type: "wakey/create", ...e, enabled: t.enabled ?? !0 }), this._closeDialog();
   }
@@ -1093,6 +1096,10 @@ let u = class extends S {
         // them flat — the section would render empty and wipe on save.
         title: "Advanced",
         schema: [
+          {
+            name: "repeat_count",
+            selector: { number: { min: 0, max: 100, mode: "box" } }
+          },
           {
             name: "snooze_minutes",
             selector: { number: { min: 1, max: 120, mode: "box", unit_of_measurement: "min" } }
@@ -1500,10 +1507,10 @@ u.styles = ne`
     }
   `;
 f([
-  P({ attribute: !1 })
+  C({ attribute: !1 })
 ], u.prototype, "hass", 2);
 f([
-  P({ attribute: !1 })
+  C({ attribute: !1 })
 ], u.prototype, "narrow", 2);
 f([
   _()

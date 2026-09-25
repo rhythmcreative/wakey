@@ -15,7 +15,9 @@ from datetime import timedelta
 
 from homeassistant.const import (
     ATTR_ENTITY_ID,
+    STATE_IDLE,
     STATE_OFF,
+    STATE_PAUSED,
     STATE_PLAYING,
     STATE_UNAVAILABLE,
     STATE_UNKNOWN,
@@ -23,7 +25,11 @@ from homeassistant.const import (
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.dispatcher import async_dispatcher_send
-from homeassistant.helpers.event import async_call_later, async_track_time_interval
+from homeassistant.helpers.event import (
+    async_call_later,
+    async_track_state_change_event,
+    async_track_time_interval,
+)
 from homeassistant.util import dt as dt_util
 
 from .const import (
@@ -67,6 +73,7 @@ class RingState:
     alarm_id: str
     snoozed: bool = False
     attempts: int = 0
+    play_count: int = 0
     unsubs: list[CALLBACK_TYPE] = field(default_factory=list)
     # What to put back when this ring ends. None means "nothing to restore" —
     # either the alarm has resume_previous off, or nothing was playing.
@@ -125,23 +132,62 @@ class WakeyPlayer:
         await self._async_start_playback(alarm, state)
         await self._async_send_ring_notification(alarm, state)
 
+        # Loop playback when a track finishes while the alarm is still actively ringing
+        @callback
+        def _on_player_state_change(event) -> None:
+            new_st = event.data.get("new_state")
+            old_st = event.data.get("old_state")
+            if new_st is None or old_st is None:
+                return
+            if (
+                alarm.id in self.ringing
+                and not self.ringing[alarm.id].snoozed
+                and old_st.state == STATE_PLAYING
+                and new_st.state in (STATE_IDLE, STATE_PAUSED, STATE_OFF)
+            ):
+                if alarm.repeat_count > 0 and state.play_count >= alarm.repeat_count:
+                    _LOGGER.info(
+                        "Alarm %s reached playback repeat limit (%d); stopping loop",
+                        alarm.name,
+                        alarm.repeat_count,
+                    )
+                    return
+                _LOGGER.info(
+                    "Alarm %s track ended; looping playback (%d/%s) on %s",
+                    alarm.name,
+                    state.play_count + 1,
+                    alarm.repeat_count or "∞",
+                    alarm.media_player,
+                )
+                self.hass.async_create_task(self._async_loop_playback(alarm, state))
+
+        state.unsubs.append(
+            async_track_state_change_event(
+                self.hass, [alarm.media_player], _on_player_state_change
+            )
+        )
+
         # Failsafe: come back and check it actually started.
+        async def _do_verify(_now) -> None:
+            await self._async_verify(alarm.id)
+
         state.unsubs.append(
             async_call_later(
                 self.hass,
                 PLAYBACK_VERIFY_SECONDS,
-                lambda _now: self.hass.async_create_task(self._async_verify(alarm.id)),
+                _do_verify,
             )
         )
 
         if alarm.auto_dismiss_minutes:
+            async def _do_auto_dismiss(_now) -> None:
+                await self.async_dismiss(alarm.id, reason="auto")
+
             state.unsubs.append(
                 async_call_later(
                     self.hass,
                     alarm.auto_dismiss_minutes * 60,
-                    lambda _now: self.hass.async_create_task(
-                        self.async_dismiss(alarm.id, reason="auto")
-                    ),
+                    _do_auto_dismiss,
                 )
             )
 
@@ -209,6 +255,7 @@ class WakeyPlayer:
 
     async def _async_start_playback(self, alarm: AlarmEntry, state: RingState) -> None:
         state.attempts += 1
+        state.play_count += 1
         player = alarm.media_player
 
         current = self.hass.states.get(player)
@@ -261,6 +308,40 @@ class WakeyPlayer:
 
         if alarm.fade_seconds > 0:
             self._start_fade(alarm, state, start_volume)
+
+    async def _async_loop_playback(self, alarm: AlarmEntry, state: RingState) -> None:
+        """Loop playback for alarms using single media files until dismissed or snoozed."""
+        if alarm.id not in self.ringing or state.snoozed:
+            return
+        await asyncio.sleep(1)
+        if alarm.id not in self.ringing or state.snoozed:
+            return
+        if alarm.repeat_count > 0 and state.play_count >= alarm.repeat_count:
+            return
+        state.play_count += 1
+        current = self.hass.states.get(alarm.media_player)
+        if current is not None and current.state in (STATE_OFF, STATE_UNKNOWN):
+            await self._call("media_player", "turn_on", {ATTR_ENTITY_ID: alarm.media_player})
+        if self._use_music_assistant(alarm):
+            await self._call(
+                "music_assistant",
+                "play_media",
+                {
+                    ATTR_ENTITY_ID: alarm.media_player,
+                    "media_id": alarm.source_uri,
+                    "enqueue": "replace",
+                },
+            )
+        else:
+            await self._call(
+                "media_player",
+                "play_media",
+                {
+                    ATTR_ENTITY_ID: alarm.media_player,
+                    "media_content_id": alarm.source_uri,
+                    "media_content_type": "music",
+                },
+            )
 
     @callback
     def _use_music_assistant(self, alarm: AlarmEntry) -> bool:
@@ -425,11 +506,14 @@ class WakeyPlayer:
                 "%s did not start playing (state=%s) — retrying once", alarm.media_player, observed
             )
             await self._async_start_playback(alarm, state)
+            async def _do_verify_retry(_now) -> None:
+                await self._async_verify(alarm_id)
+
             state.unsubs.append(
                 async_call_later(
                     self.hass,
                     PLAYBACK_VERIFY_SECONDS,
-                    lambda _now: self.hass.async_create_task(self._async_verify(alarm_id)),
+                    _do_verify_retry,
                 )
             )
             return
@@ -481,11 +565,14 @@ class WakeyPlayer:
         await self._stop_playback(alarm, state)
 
         delay = (minutes if minutes is not None else alarm.snooze_minutes) * 60
+        async def _do_snooze(_now) -> None:
+            await self._async_wake_from_snooze(alarm_id)
+
         state.unsubs.append(
             async_call_later(
                 self.hass,
                 delay,
-                lambda _now: self.hass.async_create_task(self._async_wake_from_snooze(alarm_id)),
+                _do_snooze,
             )
         )
         self.hass.bus.async_fire(

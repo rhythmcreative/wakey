@@ -92,6 +92,13 @@ def test_coerce_clamps_volume():
     assert coerce({"volume": "loud"})["volume"] == 0.7
 
 
+def test_coerce_clamps_repeat_count():
+    assert coerce({"repeat_count": 5})["repeat_count"] == 5
+    assert coerce({"repeat_count": -3})["repeat_count"] == 0
+    assert coerce({"repeat_count": 500})["repeat_count"] == 100
+    assert coerce({"repeat_count": "invalid"})["repeat_count"] == 0
+
+
 def test_coerce_rejects_bad_enums():
     assert coerce({"repeat": "hourly"})["repeat"] == "weekly"
     assert coerce({"source_kind": "gramophone"})["source_kind"] == "music_assistant"
@@ -141,6 +148,7 @@ def test_coerce_wires_notify_targets_through():
 
 def test_alarm_entry_default_notify_targets_is_empty():
     assert AlarmEntry.from_dict({"id": "a"}).notify_targets == []
+    assert AlarmEntry.from_dict({"id": "a"}).repeat_count == 0
 
 
 async def test_policies_are_stored_alongside_alarms(hass):

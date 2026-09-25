@@ -214,6 +214,7 @@ export class WakeyPanel extends LitElement {
       pre_alarm_minutes: Number(d.pre_alarm_minutes ?? 0),
       pre_alarm_script: d.pre_alarm_script || null,
       notify_targets: d.notify_targets ?? [],
+      repeat_count: Number(d.repeat_count ?? 0),
     };
     if (this._editing) {
       await this._call({ type: "wakey/update", alarm_id: this._editing, ...payload });
@@ -279,6 +280,10 @@ export class WakeyPanel extends LitElement {
         title: "Advanced",
         schema: [
           {
+            name: "repeat_count",
+            selector: { number: { min: 0, max: 100, mode: "box" } },
+          },
+          {
             name: "snooze_minutes",
             selector: { number: { min: 1, max: 120, mode: "box", unit_of_measurement: "min" } },
           },
@@ -321,6 +326,7 @@ export class WakeyPanel extends LitElement {
       pre_alarm_minutes: "Pre-alarm lead time",
       pre_alarm_script: "Pre-alarm script",
       notify_targets: "Notify on ring",
+      repeat_count: "Playback repeats (0 = continuous)",
       resume_previous: "Resume previous playback",
       advanced: "Advanced",
     })[s.name as string] ?? s.name;

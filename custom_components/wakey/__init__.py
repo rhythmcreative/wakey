@@ -77,6 +77,7 @@ _ALARM_FIELDS = {
     vol.Optional("pre_alarm_minutes"): vol.All(vol.Coerce(int), vol.Range(0, 240)),
     vol.Optional("pre_alarm_script"): vol.Any(cv.entity_id, None),
     vol.Optional("notify_targets"): vol.All(cv.ensure_list, [cv.entity_id]),
+    vol.Optional("repeat_count"): vol.All(vol.Coerce(int), vol.Range(0, 100)),
     # Lets an automation, which has no user of its own, say who an alarm
     # belongs to. Ignored when a non-admin makes the call.
     vol.Optional(ATTR_OWNER_ID): vol.Any(cv.string, None),

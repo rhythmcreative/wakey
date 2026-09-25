@@ -20,6 +20,7 @@ from .const import (
     DEFAULT_AUTO_DISMISS_MINUTES,
     DEFAULT_FADE_SECONDS,
     DEFAULT_PRE_ALARM_MINUTES,
+    DEFAULT_REPEAT_COUNT,
     DEFAULT_SNOOZE_MINUTES,
     DEFAULT_VOLUME,
     DOMAIN,
@@ -81,6 +82,7 @@ class AlarmEntry:
     # when this alarm rings. Empty means no notification is sent.
     notify_targets: list[str] = field(default_factory=list)
     last_fired: str | None = None
+    repeat_count: int = DEFAULT_REPEAT_COUNT
     # The Home Assistant user this alarm belongs to. None means unowned —
     # created before multi-user support, or by an automation with no user
     # context — and unowned alarms are visible to administrators only.
@@ -158,6 +160,7 @@ def coerce(data: dict[str, Any]) -> dict[str, Any]:
 
     for key, default, lo, hi in (
         ("fade_seconds", DEFAULT_FADE_SECONDS, 0, 3600),
+        ("repeat_count", DEFAULT_REPEAT_COUNT, 0, 100),
         ("snooze_minutes", DEFAULT_SNOOZE_MINUTES, 1, 120),
         ("auto_dismiss_minutes", DEFAULT_AUTO_DISMISS_MINUTES, 1, 240),
         ("pre_alarm_minutes", DEFAULT_PRE_ALARM_MINUTES, 0, 240),

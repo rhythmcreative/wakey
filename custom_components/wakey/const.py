@@ -78,6 +78,7 @@ ATTR_AUTO_DISMISS_MINUTES = "auto_dismiss_minutes"
 ATTR_PRE_ALARM_MINUTES = "pre_alarm_minutes"
 ATTR_PRE_ALARM_SCRIPT = "pre_alarm_script"
 ATTR_LAST_FIRED = "last_fired"
+ATTR_REPEAT_COUNT = "repeat_count"
 # The Home Assistant user id that owns an alarm. None means unowned: alarms
 # that predate multi-user support, or ones created by an automation with no
 # user context. Unowned alarms are visible to administrators only.
@@ -110,6 +111,8 @@ DEFAULT_SNOOZE_MINUTES = 9
 DEFAULT_AUTO_DISMISS_MINUTES = 30
 # 0 disables the pre-alarm hook entirely.
 DEFAULT_PRE_ALARM_MINUTES = 0
+# 0 repeats continuously until dismissed or auto-dismissed.
+DEFAULT_REPEAT_COUNT = 0
 
 # How long after a missed firing time Wakey will still fire on startup. Beyond
 # this the occurrence is logged and skipped — waking someone an hour late is

@@ -6,7 +6,7 @@ from homeassistant.const import Platform
 
 DOMAIN = "wakey"
 NAME = "Wakey"
-VERSION = "0.5.3"
+VERSION = "0.5.4"
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,

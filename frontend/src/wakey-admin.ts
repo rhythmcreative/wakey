@@ -15,7 +15,6 @@ import type {
  * at, and say who owns the alarms that have no owner — which, after upgrading
  * from a single-user Wakey, is all of them.
  */
-@customElement("wakey-admin")
 export class WakeyAdmin extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ attribute: false }) public alarms: Alarm[] = [];
@@ -348,6 +347,10 @@ export class WakeyAdmin extends LitElement {
       color: var(--error-color, #db4437);
     }
   `;
+}
+
+if (!customElements.get("wakey-admin")) {
+  customElements.define("wakey-admin", WakeyAdmin);
 }
 
 declare global {

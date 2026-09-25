@@ -12,7 +12,6 @@ import "./wakey-admin";
 
 const DAY_OPTIONS = DAY_LABELS.map((label, i) => ({ value: String(i), label }));
 
-@customElement("wakey-panel")
 export class WakeyPanel extends LitElement {
   // Set as properties by the panel host, not as attributes.
   @property({ attribute: false }) public hass!: HomeAssistant;
@@ -928,6 +927,10 @@ export class WakeyPanel extends LitElement {
       color: var(--error-color, #db4437) !important;
     }
   `;
+}
+
+if (!customElements.get("wakey-panel")) {
+  customElements.define("wakey-panel", WakeyPanel);
 }
 
 declare global {

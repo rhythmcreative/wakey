@@ -12,6 +12,7 @@ import logging
 import uuid
 from dataclasses import dataclass, field
 from datetime import timedelta
+from typing import Any
 
 from homeassistant.const import (
     ATTR_ENTITY_ID,
@@ -109,8 +110,8 @@ class WakeyPlayer:
     def any_ringing(self) -> bool:
         return any(not state.snoozed for state in self.ringing.values())
 
-    def _dismiss_voice_satellites(self) -> None:
-        """Dismiss screensavers on connected Voice Satellites so ringing alarms and cards are visible."""
+    def _push_voice_satellite_alarm_event(self, event_type: str, data: dict[str, Any]) -> None:
+        """Push alarm event to connected Voice Satellites."""
         try:
             if not hasattr(self.hass, "data") or not isinstance(self.hass.data, dict):
                 return
@@ -119,9 +120,13 @@ class WakeyPlayer:
                 return
             for ent in vs_data.values():
                 if hasattr(ent, "_push_satellite_event"):
-                    ent._push_satellite_event("dismiss_screensaver", {})
+                    ent._push_satellite_event(event_type, data)
         except Exception as err:
-            _LOGGER.debug("Could not dismiss voice satellite screensavers: %s", err)
+            _LOGGER.debug("Could not push voice satellite event %s: %s", event_type, err)
+
+    def _dismiss_voice_satellites(self) -> None:
+        """Dismiss screensavers on connected Voice Satellites so ringing alarms and cards are visible."""
+        self._push_voice_satellite_alarm_event("dismiss_screensaver", {"id": 1})
 
     async def async_fire(self, alarm: AlarmEntry, was_missed: bool = False) -> None:
         """Start an alarm."""
@@ -144,6 +149,15 @@ class WakeyPlayer:
         )
 
         self._dismiss_voice_satellites()
+        self._push_voice_satellite_alarm_event(
+            "alarm_fire",
+            {
+                "id": 1,
+                "alarm_id": alarm.id,
+                "name": alarm.name,
+                "time": alarm.time,
+            },
+        )
         await self._async_start_playback(alarm, state)
         await self._async_send_ring_notification(alarm, state)
 
@@ -602,6 +616,10 @@ class WakeyPlayer:
             EVENT_ALARM_SNOOZED,
             {ATTR_ALARM_ID: alarm.id, "name": alarm.name, "minutes": delay // 60},
         )
+        self._push_voice_satellite_alarm_event(
+            "alarm_dismiss",
+            {"id": 1, "alarm_id": alarm.id, "snoozed": True},
+        )
         async_dispatcher_send(self.hass, SIGNAL_RUNTIME_CHANGED)
         _LOGGER.info("Snoozed %s for %d minutes", alarm.name, delay // 60)
         return True
@@ -623,6 +641,10 @@ class WakeyPlayer:
             self.hass.bus.async_fire(
                 EVENT_ALARM_DISMISSED,
                 {ATTR_ALARM_ID: alarm_id, "name": alarm.name, "reason": reason},
+            )
+            self._push_voice_satellite_alarm_event(
+                "alarm_dismiss",
+                {"id": 1, "alarm_id": alarm_id, "reason": reason},
             )
             _LOGGER.info("Dismissed %s (%s)", alarm.name, reason)
             if alarm.repeat in (REPEAT_ONCE, REPEAT_NEVER):

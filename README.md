@@ -1,228 +1,122 @@
-# Wakey
+<h1 align="center">Wakey ⏰</h1>
 
-An alarm clock for Home Assistant.
+<div align="center">
 
-Home Assistant can do almost anything on a schedule, but it has never had an
-alarm clock — the thing you actually rely on to wake you up, with a snooze
-button, weekday repeat, and the confidence that it will go off. Wakey adds one,
-with its own page in the sidebar.
+<p><i> An intuitive, resilient alarm clock for Home Assistant with continuous looping, repeat counts, speaker permissions, and a dedicated sidebar UI. </i></p>
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=johnrcarty&repository=wakey&category=integration)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-41BDF5?style=for-the-badge&logo=homeassistant&logoColor=white)](https://www.home-assistant.io/)
+[![HACS](https://img.shields.io/badge/HACS-Custom-orange?style=for-the-badge&logo=homeassistantcommunitystore&logoColor=white)](https://hacs.xyz/)
+[![Python](https://img.shields.io/badge/Python-3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-## How this was built
+</div>
 
-Wakey was written with [Claude Code](https://claude.com/claude-code). Scope,
-architecture and design decisions were directed by the repository owner; Claude
-wrote essentially all of the code, tests and documentation.
+[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=23&pause=1000&color=F7F7F7&vCenter=true&width=435&height=30&lines=ABOUT)](https://git.io/typing-svg)
 
-That is stated plainly because you should know what you are installing. What it
-means in practice:
+Home Assistant can do almost anything on a schedule, but it has never had a dedicated, dependable alarm clock — the thing you actually rely on to wake you up every morning, with a snooze button, custom repeat loops, weekday recurrence, and the confidence that it will go off without fail.
 
-- There is a real test suite covering the parts that are easy to get wrong —
-  both DST transitions, alarms missed while Home Assistant was down, storage
-  round-trips, and WebSocket permissions.
-- It runs in production on the author's own Home Assistant, on the speaker in
-  their own bedroom.
-- It has **not** had wide real-world use yet. If you are relying on it to get up
-  for something that matters, fire it once with the Test button first, and keep
-  a second alarm until you trust it.
+**Wakey** adds a complete alarm system with its own clean, native page in the Home Assistant sidebar.
 
-Bug reports are very welcome.
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rhythmcreative&repository=wakey&category=integration)
 
-## What makes it different
+______________________________________________________________________
 
-- **Volume fade-in.** Ramp from a whisper up to your target volume over a
-  configurable window, instead of being detonated awake at full blast. The ramp
-  backs off if you reach for the volume yourself.
-- **A failsafe.** After firing, Wakey checks the speaker actually reached
-  `playing`. If it didn't, it retries, then raises a notification and fires a
-  `wakey_alarm_failed` event you can hang your own escalation off. An alarm that
-  fails silently is worse than no alarm.
-- **Skip next.** Off tomorrow? Skip one occurrence without disarming the alarm
-  and forgetting to turn it back on. The flag clears itself afterwards.
-- **Adjust next.** Need to be up an hour earlier tomorrow, or get a lie-in?
-  Move just the next occurrence. It rings once at the new time and goes back to
-  its usual schedule on its own — no second alarm to toggle between, nothing to
-  remember to change back.
-- **A pre-alarm hook.** Run a script a set number of minutes before — sunrise
-  lights, heating, a kettle.
-- **Survives a restart.** If Home Assistant was down when an alarm was due, it
-  fires on startup — but only inside a grace window, because being woken an hour
-  late is worse than not being woken.
-- **Correct across DST.** The nonexistent hour on spring-forward fires at the
-  transition rather than an hour late; the repeated hour on fall-back rings once.
-  This is unit tested, not hoped for.
-- **Native entities.** Every alarm is a device with its own switch, editable
-  time, and next-fire sensor, so alarms work with normal automations,
-  dashboards and voice — not just inside Wakey.
-- **One list each.** Alarms belong to the person who made them. Everyone gets
-  their own list, and an admin decides which speakers each person may use — so
-  nobody can set a 3am alarm on someone else's bedroom speaker.
+[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=23&pause=1000&color=F7F7F7&vCenter=true&width=435&height=30&lines=FEATURES)](https://git.io/typing-svg)
 
-## Requirements
+- **Continuous Looping & Playback Repeats (`repeat_count`)**: Short audio files and alarm tones loop automatically while ringing so you never sleep through a 2-second clip. Choose infinite loop (`0`), single play (`1`), or any custom repeat count (`N`).
+- **Volume Fade-In**: Ramp from a quiet whisper up to your target volume over a customizable duration, instead of detonating awake at full volume. Ramping automatically yields if you manually adjust volume.
+- **Fail-Safe Playback Verification**: After firing, Wakey verifies the media player actually reached `playing`. If not, it retries and fires a `wakey_alarm_failed` event you can attach backup automations or mobile notifications to.
+- **Skip Next**: Have a day off tomorrow? Skip the single next occurrence with one click without disabling the alarm or forgetting to turn it back on.
+- **Adjust Next**: Need to wake up an hour earlier tomorrow or enjoy a lie-in? Move just the next occurrence to a new time. It rings once at the new time and reverts to its usual schedule automatically.
+- **Pre-Alarm Automations**: Run scripts or automations minutes before the alarm (e.g., sunrise lights, bedroom heating, coffee maker).
+- **Restart Survival**: If Home Assistant restarts or was down when an alarm was due, it safely triggers upon startup within a configurable grace window.
+- **DST Compliant**: Fully handles daylight saving time transitions (spring forward and fall back) with complete test coverage.
+- **Native Home Assistant Entities**: Every alarm generates native switches, time inputs, test buttons, and next-fire timestamp sensors.
+- **Per-User Permissions**: Alarms belong to the user who created them. Administrators manage an allowlist of which speakers each household member can target.
 
-- Home Assistant 2026.3 or newer
-- Optional: [Music Assistant](https://music-assistant.io/) for library playback
+______________________________________________________________________
 
-## Installation
+[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=23&pause=1000&color=F7F7F7&vCenter=true&width=435&height=30&lines=INSTALL)](https://git.io/typing-svg)
 
-Not yet in the default HACS index. Add it as a custom repository:
+### Via HACS (Recommended)
 
-1. HACS → ⋮ → Custom repositories
-2. Repository `johnrcarty/wakey`, category **Integration**
-3. Install, restart Home Assistant
-4. Settings → Devices & Services → Add Integration → **Wakey**
+1. Open **HACS** → Click the three dots (⋮) in the top right → **Custom repositories**.
+2. Add `https://github.com/rhythmcreative/wakey` with category **Integration**.
+3. Click **Download**, then restart Home Assistant.
+4. Go to **Settings → Devices & Services → Add Integration** → Search for **Wakey**.
+5. Click on **Wakey** in your left sidebar to start creating alarms!
 
-**Wakey** then appears in your sidebar.
+*(Or click the button below to add directly)*
 
-## Using it
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rhythmcreative&repository=wakey&category=integration)
 
-Add an alarm from the panel: set a time, pick the days, choose a speaker, and
-browse for a track. The media browser opens straight into your Music Assistant
-library.
+______________________________________________________________________
 
-`source_uri` accepts a Music Assistant URI (`library://track/6018`), a media
-content ID, or plain search text that Music Assistant resolves.
+[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=23&pause=1000&color=F7F7F7&vCenter=true&width=435&height=30&lines=USAGE+%26+ACTIONS)](https://git.io/typing-svg)
 
-Everything is also available as actions, which is handy for automations:
+### Adding an Alarm in the UI
+From the Wakey sidebar panel:
+- Set your wake-up time and days of the week.
+- Choose your target media player speaker.
+- Select your media track (Music Assistant library, local media file, or streaming URL).
+- Open **Advanced** to set your **Playback repeats** (`0` = loop continuously until dismissed, `1` = once, `N` = N times), fade-in time, and snooze duration.
+
+### Service Actions for Automations
 
 ```yaml
 action: wakey.create
 data:
-  name: Weekday
-  time: "06:30"
+  name: "Morning Alarm"
+  time: "07:00"
   repeat: weekly
-  weekdays: [0, 1, 2, 3, 4]     # Mon=0 … Sun=6
-  media_player: media_player.bedroom
-  source_kind: music_assistant
-  source_uri: library://track/6018
-  volume: 0.7
-  fade_seconds: 60
-  pre_alarm_minutes: 15
-  pre_alarm_script: script.sunrise_lights
-  resume_previous: true
+  weekdays: [0, 1, 2, 3, 4]       # Mon=0 … Sun=6
+  media_player: media_player.bedroom_speaker
+  source_kind: media_player       # or music_assistant
+  source_uri: "media-source://media_source/local/alarms/alarm_oxygen_gentle.mp3"
+  volume: 0.8
+  fade_seconds: 30
+  repeat_count: 0                 # 0 = continuous loop until dismissed
+  snooze_minutes: 9
+  auto_dismiss_minutes: 30
 ```
 
-### Moving one occurrence
+### Available Actions
 
-**Adjust next** on an alarm card moves the next occurrence only, to another
-time on the same day. The card shows what it will do (`Tomorrow at 05:30`), and
-**Back to 07:00** in the same dialog undoes it. Once that day is over the alarm
-is back to normal by itself.
-
-```yaml
-action: wakey.adjust_next
-data:
-  alarm_id: 8f1c2b3a4d5e6f7a8b9c0d1e2f3a4b5c
-  time: "05:30"
-```
-
-You never say *which* occurrence: it is always the next one this alarm would
-ring, worked out when the action runs, so adjusting twice moves the same
-morning again rather than booking the one after it. Pass `clear: true` instead
-of a time to restore the usual time. A time that has already gone by is
-refused rather than quietly landing on the wrong day, and setting an
-adjustment cancels a pending **Skip next** (and vice versa) — an occurrence is
-either moved or skipped, never both.
-
-For a different *day*, make a second alarm — this deliberately does not move an
-alarm off its own date.
-
-### Resuming what the alarm interrupted
-
-If you fall asleep to ambient noise or a playlist on the same speaker the alarm
-targets, **Resume previous playback** (Advanced section of the alarm form, or
-`resume_previous: true`) puts it back when the alarm is dismissed or snoozed —
-same track, same position, same volume. Snoozing resumes it for the length of
-the snooze.
-
-By default this is off, and an alarm replaces whatever was playing.
-
-It works for **Music Assistant sources only**, and only when the speaker was
-already playing a Music Assistant queue. That is not an arbitrary restriction:
-`music_assistant.get_queue` is the only thing that reports both what is playing
-and how far into it you are, and a plain `media_player` has no queue to insert
-the alarm into without destroying it. Anything Wakey cannot resume from falls
-back to the normal behaviour — an alarm that reliably rings matters more than
-one that tidies up after itself.
-
-One trade-off worth knowing: resuming re-inserts the interrupted track rather
-than rewinding to it, so each ring leaves two spent items behind the play head
-in the Music Assistant queue. They never play again, and anything that starts a
-queue afresh clears them.
-
-## Users and permissions
-
-Every alarm belongs to the Home Assistant user who created it. You see your own
-alarms and nobody else's; administrators see everyone's.
-
-Speakers are **deny-by-default**. A new household member can open Wakey but has
-nowhere to point an alarm until an administrator grants them one. Go to
-**Wakey → People** and pick the speakers each person may use. Administrators are
-never restricted.
-
-The same screen shows who owns what, and lets you hand an alarm to someone else.
-
-**After upgrading from 0.1.x**, alarms that already existed have no owner, so
-only administrators can see them. The People screen offers a one-click *Assign
-all to me* to fix that. They keep firing either way.
-
-### What this does and does not protect against
-
-It stops someone setting, editing, firing or silencing an alarm that isn't
-theirs, from the panel, from the actions, or from the alarm's own entities.
-
-It does **not** hide alarms completely. Home Assistant gives every non-read-only
-user read access to every entity state, so another household member can still
-*see* that `switch.dads_alarm` exists and what time it is set to — they just
-can't touch it. Nor does the speaker allowlist restrict the speaker itself: it
-governs Wakey alarms, not `media_player.play_media`. Someone determined can
-still play music on any speaker directly, exactly as they always could.
-
-## Actions
-
-| Action | Purpose |
+| Action | Description |
 |---|---|
-| `wakey.create` | Add an alarm |
-| `wakey.update` | Patch fields on an alarm (`alarm_id` plus what changed) |
-| `wakey.delete` | Remove an alarm and its entities |
-| `wakey.snooze` | Silence a ringing alarm; omit `alarm_id` for whatever is ringing |
-| `wakey.dismiss` | Stop until the next occurrence |
-| `wakey.skip_next` | Skip one occurrence, then resume |
-| `wakey.adjust_next` | Move the next occurrence to another time that day (`clear: true` to undo) |
-| `wakey.trigger_now` | Fire immediately — use this to test a speaker and source |
+| `wakey.create` | Create a new alarm with schedule and audio configuration |
+| `wakey.update` | Update fields on an existing alarm by `alarm_id` |
+| `wakey.delete` | Delete an alarm and remove its entities |
+| `wakey.snooze` | Silence a ringing alarm for a set number of minutes |
+| `wakey.dismiss` | Stop a ringing alarm until its next scheduled occurrence |
+| `wakey.skip_next` | Skip only the next occurrence, then resume schedule |
+| `wakey.adjust_next` | Move the next occurrence to a specific time (`clear: true` to undo) |
+| `wakey.trigger_now` | Fire an alarm immediately for testing |
 
-## Entities
+______________________________________________________________________
 
-**Per alarm** (each alarm is its own device):
+[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=23&pause=1000&color=F7F7F7&vCenter=true&width=435&height=30&lines=ENTITIES+%26+EVENTS)](https://git.io/typing-svg)
 
-| Entity | Purpose |
+### Entities Per Alarm
+Each alarm creates its own Home Assistant device with:
+- `switch.<name>`: Arm / disarm the alarm.
+- `time.<name>_time`: Time selector editable from any dashboard or automation.
+- `sensor.<name>_next`: Timestamp sensor of next scheduled fire time.
+- `button.<name>_test`: Quick test button to verify audio output and volume.
+- `switch.<name>_skip_next`: Toggle to skip the upcoming occurrence.
+
+### Events
+
+| Event | Description |
 |---|---|
-| `switch.<name>` | Armed or not |
-| `time.<name>_time` | The alarm time, editable anywhere in HA |
-| `sensor.<name>_next` | Next fire, `device_class: timestamp` |
-| `button.<name>_test` | Fire it now |
-| `switch.<name>_skip_next` | Skip one occurrence (disabled by default) |
+| `wakey_pre_alarm` | Fires when the pre-alarm lead time is reached |
+| `wakey_alarm_fired` | Fires when the alarm begins ringing |
+| `wakey_alarm_snoozed` | Fires when an alarm is snoozed |
+| `wakey_alarm_dismissed` | Fires when an alarm is dismissed |
+| `wakey_alarm_failed` | Fires if a media player fails to play after retries |
 
-**Global:**
-
-| Entity | Purpose |
-|---|---|
-| `sensor.wakey_next_alarm` | Soonest alarm across all of them |
-| `binary_sensor.wakey_ringing` | On while something is actually sounding |
-
-## Events
-
-Hang your own automations off these — each carries `alarm_id` and `name`:
-
-| Event | When |
-|---|---|
-| `wakey_pre_alarm` | The pre-alarm lead time is reached |
-| `wakey_alarm_fired` | An alarm starts (`missed: true` if it was a catch-up) |
-| `wakey_alarm_snoozed` | Snoozed, with `minutes` |
-| `wakey_alarm_dismissed` | Dismissed, with `reason` |
-| `wakey_alarm_failed` | Playback never started, with `reason` |
-
+Example notification automation for failed playback:
 ```yaml
 triggers:
   - trigger: event
@@ -230,33 +124,14 @@ triggers:
 actions:
   - action: notify.mobile_app_phone
     data:
-      message: "Alarm {{ trigger.event.data.name }} failed to play!"
+      title: "Wakey Alarm Failed!"
+      message: "Alarm {{ trigger.event.data.name }} failed to play on speaker."
 ```
 
-## Development
+______________________________________________________________________
 
-```bash
-uv venv --python 3.14 .venv          # HA 2026.7+ requires Python 3.14+
-uv pip install --python .venv/bin/python -r requirements_test.txt
-.venv/bin/python -m pytest -q
+<div align="center">
 
-cd frontend && npm ci && npm run build   # writes the committed panel bundle
-```
+<p>Made with ❤️ from rhythmcreative.</p>
 
-Deploy to a live instance over SSH:
-
-```bash
-./scripts/deploy.sh my-ha-host
-ssh my-ha-host 'ha core restart'     # Python changes need a restart
-./scripts/logs.sh my-ha-host
-```
-
-`homeassistant.reload_config_entry` re-runs setup with the *old* code — there is
-no supported hot reload for custom-component Python. Restart.
-
-The panel bundle in `custom_components/wakey/frontend/dist/` is committed
-deliberately: HACS ships repo contents verbatim and never runs a build step.
-
-## Licence
-
-MIT
+</div>

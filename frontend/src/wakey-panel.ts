@@ -10,6 +10,12 @@ import {
 } from "./types";
 import "./wakey-admin";
 import "./wakey-alarm-settings";
+import {
+  DEFAULT_ALARM_APPEARANCE,
+  getAlarmFontFamily,
+  loadAlarmAppearance,
+  type AlarmAppearanceConfig,
+} from "./wakey-alarm-settings";
 
 const DAY_OPTIONS = DAY_LABELS.map((label, i) => ({ value: String(i), label }));
 
@@ -31,17 +37,44 @@ export class WakeyPanel extends LitElement {
   @state() private _adjustTime = "";
   @state() private _haForm = false;
   @state() private _testingAlarm: Alarm | null = null;
+  @state() private _appearance: AlarmAppearanceConfig = loadAlarmAppearance();
 
   private _unsub?: () => void;
   private _subscribed = false;
 
+  public connectedCallback(): void {
+    super.connectedCallback();
+    this._appearance = loadAlarmAppearance();
+    window.addEventListener("wakey-appearance-changed", this._onAppearanceChanged);
+    this._loadGoogleFonts();
+  }
+
   public disconnectedCallback(): void {
     super.disconnectedCallback();
-    // The panel host disconnects panels it is not showing, so leaking this
-    // subscription would accumulate.
+    window.removeEventListener("wakey-appearance-changed", this._onAppearanceChanged);
     this._unsub?.();
     this._unsub = undefined;
     this._subscribed = false;
+  }
+
+  private _onAppearanceChanged = (ev: Event) => {
+    const detail = (ev as CustomEvent).detail;
+    if (detail?.config) {
+      this._appearance = { ...detail.config };
+    } else {
+      this._appearance = loadAlarmAppearance();
+    }
+  };
+
+  private _loadGoogleFonts(): void {
+    if (!document.getElementById("wakey-google-alarm-fonts")) {
+      const link = document.createElement("link");
+      link.id = "wakey-google-alarm-fonts";
+      link.rel = "stylesheet";
+      link.href =
+        "https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Inter:wght@300;400;500;700&family=Nunito:wght@300;400;500;700&family=Oswald:wght@300;400;500;700&family=Roboto+Slab:wght@300;400;500;700&family=Rubik:wght@300;400;500;700&display=swap";
+      document.head.appendChild(link);
+    }
   }
 
   protected updated(changed: PropertyValues): void {
@@ -391,17 +424,53 @@ export class WakeyPanel extends LitElement {
     `;
   }
 
+  private _formatAlarmDays(alarm: Partial<Alarm> | Record<string, any>, short = false): string {
+    if (alarm.repeat === "once") return alarm.date ?? (short ? "1 vez" : "Una vez");
+    if (alarm.repeat === "never") return alarm.date ? `${alarm.date} (Nunca)` : "Nunca";
+    const weekdays: number[] = Array.isArray(alarm.weekdays)
+      ? alarm.weekdays.map(Number)
+      : [];
+    if (weekdays.length === 0) return "Sin días";
+    if (weekdays.length === 7) return short ? "Diario" : "Todos los días";
+
+    const sorted = [...weekdays].sort((a, b) => a - b);
+    if (
+      sorted.length === 5 &&
+      sorted[0] === 0 &&
+      sorted[1] === 1 &&
+      sorted[2] === 2 &&
+      sorted[3] === 3 &&
+      sorted[4] === 4
+    ) {
+      return short ? "Lun-Vie" : "Lunes a Viernes";
+    }
+    if (sorted.length === 2 && sorted[0] === 5 && sorted[1] === 6) {
+      return short ? "Sáb, Dom" : "Sábados y Domingos";
+    }
+    const shortNames = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+    const longNames = [
+      "Lunes",
+      "Martes",
+      "Miércoles",
+      "Jueves",
+      "Viernes",
+      "Sábado",
+      "Domingo",
+    ];
+    const names = short ? shortNames : longNames;
+    return sorted.map((d) => names[d] || `Día ${d}`).join(short ? ", " : " y ");
+  }
+
+  private _formatSpeaker(mediaPlayer: string | undefined): string {
+    if (!mediaPlayer) return "Altavoz";
+    const raw = mediaPlayer.replace(/^media_player\./, "").replace(/_/g, " ").trim();
+    if (raw.toLowerCase() === "salon") return "Salón";
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  }
+
   private _renderAlarm(alarm: Alarm) {
-    const days =
-      alarm.repeat === "once"
-        ? (alarm.date ?? "Once")
-        : alarm.repeat === "never"
-          ? (alarm.date ? `${alarm.date} (Never)` : "Never (auto-delete)")
-          : alarm.weekdays.length === 7
-            ? "Every day"
-            : alarm.weekdays.length === 0
-              ? "No days selected"
-              : alarm.weekdays.map((d) => DAY_LABELS[d]).join(" ");
+    const days = this._formatAlarmDays(alarm, false);
+    const speaker = this._formatSpeaker(alarm.media_player);
 
     return html`
       <div class="card ${alarm.enabled ? "" : "dim"}">
@@ -410,7 +479,10 @@ export class WakeyPanel extends LitElement {
           <div class="grow">
             <div class="name">${alarm.name}</div>
             <div class="sub">${days}</div>
-            <div class="sub">${alarm.media_player || "no player"}</div>
+            <div class="sub speaker-sub">
+              <ha-icon icon="mdi:speaker"></ha-icon>
+              <span>Altavoz: ${speaker}</span>
+            </div>
           </div>
           <div class="right">
             ${this._haForm
@@ -442,7 +514,10 @@ export class WakeyPanel extends LitElement {
                 ${alarm.skip_next ? "Don't skip" : "Skip next"}
               </button>
               <button @click=${() => this._openAdjust(alarm)}>Adjust next</button>
-              <button @click=${() => this._trigger(alarm)}>Test</button>
+              <button class="btn-test" @click=${() => this._trigger(alarm)}>
+                <ha-icon icon="mdi:play" style="--mdc-icon-size: 16px; margin-right: 4px; vertical-align: -2px;"></ha-icon>
+                Test
+              </button>
               <button class="danger" @click=${() => this._delete(alarm)}>Delete</button>
             </div>`}
       </div>
@@ -468,16 +543,10 @@ export class WakeyPanel extends LitElement {
     if (!this._dialogOpen) return nothing;
     const timeVal = this._draft.time ? String(this._draft.time).slice(0, 5) : "07:00";
     const nameVal = this._draft.name || "Alarma";
-    const daysVal =
-      this._draft.repeat === "once"
-        ? (this._draft.date || "Una vez")
-        : this._draft.repeat === "never"
-          ? (this._draft.date ? `${this._draft.date} (Nunca)` : "Nunca (auto-borrado)")
-          : (this._draft.weekdays?.length === 7
-            ? "Todos los días"
-            : (this._draft.weekdays?.length
-              ? this._draft.weekdays.map((d: any) => DAY_LABELS[Number(d)]).join(" ")
-              : "L M X J V"));
+    const daysVal = this._formatAlarmDays(this._draft, false);
+    const speakerVal = this._draft.media_player
+      ? this._formatSpeaker(this._draft.media_player)
+      : "";
 
     return html`
       <div class="scrim" @click=${this._closeDialog}></div>
@@ -486,14 +555,25 @@ export class WakeyPanel extends LitElement {
 
         <div class="live-alarm-preview">
           <div class="preview-header">
-            <div class="preview-icon"><ha-icon icon="mdi:alarm"></ha-icon></div>
+            <div class="preview-icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                <path d="M12,20A7,7 0 0,1 5,13A7,7 0 0,1 12,6A7,7 0 0,1 19,13A7,7 0 0,1 12,20M12,4A9,9 0 0,0 3,13A9,9 0 0,0 12,22A9,9 0 0,0 21,13A9,9 0 0,0 12,4M12.5,8H11V14L16.2,17.2L17,15.9L12.5,13.2V8M22,5.7L17.7,2.2L16.4,3.8L20.7,7.3L22,5.7M6.3,3.8L5,2.2L0.7,5.7L2,7.3L6.3,3.8Z"/>
+              </svg>
+            </div>
             <div class="preview-title">${nameVal}</div>
-            <span class="preview-badge ${this._editing ? "edit" : "new"}">${this._editing ? "EDITANDO" : "NUEVA"}</span>
+            <span class="preview-badge ${this._editing ? "edit" : "new"}">${this._editing ? "EDITANDO" : "PROGRAMADA"}</span>
           </div>
           <div class="preview-time">${timeVal}</div>
           <div class="preview-sub">${daysVal}</div>
-          ${this._draft.media_player
-            ? html`<div class="preview-speaker"><ha-icon icon="mdi:speaker"></ha-icon> ${String(this._draft.media_player).replace("media_player.", "").replace(/_/g, " ")}</div>`
+          ${speakerVal
+            ? html`
+                <div class="preview-speaker">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                    <path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
+                  </svg>
+                  <span>Altavoz: ${speakerVal}</span>
+                </div>
+              `
             : nothing}
         </div>
 
@@ -529,38 +609,92 @@ export class WakeyPanel extends LitElement {
   private _renderTestModal() {
     if (!this._testingAlarm) return nothing;
     const alarm = this._testingAlarm;
-    const days =
-      alarm.repeat === "once"
-        ? (alarm.date ?? "Una vez")
-        : alarm.repeat === "never"
-          ? (alarm.date ? `${alarm.date} (Nunca)` : "Nunca (auto-borrado)")
-          : alarm.weekdays.length === 7
-            ? "Todos los días"
-            : alarm.weekdays.length === 0
-              ? "Sin días"
-              : alarm.weekdays.map((d) => DAY_LABELS[d]).join(" ");
+    const days = this._formatAlarmDays(alarm, false);
+    const speaker = this._formatSpeaker(alarm.media_player);
+    const app = this._appearance;
+    const fontFamily = getAlarmFontFamily(app.font);
+    const mult = Math.max(0.7, Math.min(1.4, app.scale / 100));
 
     return html`
-      <div class="scrim" @click=${() => this._stopTest()}></div>
-      <div class="dialog test-dialog" role="dialog" aria-modal="true">
-        <div class="live-alarm-preview test-mode">
-          <div class="preview-header">
-            <div class="preview-icon pulsing"><ha-icon icon="mdi:bell-ring"></ha-icon></div>
-            <div class="preview-title">${alarm.name || "Alarma"}</div>
-            <span class="preview-badge test">SONANDO</span>
+      <div class="test-overlay" @click=${() => this._stopTest()}></div>
+      <div class="test-stage" role="dialog" aria-modal="true">
+        <!-- 100% exact replica of assets/alarm.png -->
+        <div
+          class="official-alarm-card"
+          style="
+            background-color: ${app.cardBgColor};
+            font-family: ${fontFamily};
+          "
+        >
+          <!-- Top Row: Circle icon + Title on left, Badge on right -->
+          <div class="official-alarm-header">
+            <div class="official-title-wrap">
+              ${app.showIcon
+                ? html`
+                    <div class="official-alarm-icon">
+                      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path d="M12,20A7,7 0 0,1 5,13A7,7 0 0,1 12,6A7,7 0 0,1 19,13A7,7 0 0,1 12,20M12,4A9,9 0 0,0 3,13A9,9 0 0,0 12,22A9,9 0 0,0 21,13A9,9 0 0,0 12,4M12.5,8H11V14L16.2,17.2L17,15.9L12.5,13.2V8M22,5.7L17.7,2.2L16.4,3.8L20.7,7.3L22,5.7M6.3,3.8L5,2.2L0.7,5.7L2,7.3L6.3,3.8Z"/>
+                      </svg>
+                    </div>
+                  `
+                : nothing}
+              <span class="official-alarm-name" style="color: ${app.textColor};">
+                ${alarm.name || "Despertador"}
+              </span>
+            </div>
+            <span
+              class="official-alarm-badge"
+              style="
+                background-color: ${app.badgeBgColor};
+                color: ${app.badgeTextColor};
+              "
+            >
+              PROGRAMADA
+            </span>
           </div>
-          <div class="preview-time">${alarm.time}</div>
-          <div class="preview-sub">${days}</div>
-          <div class="preview-speaker">
-            <ha-icon icon="mdi:speaker"></ha-icon> ${String(alarm.media_player || "Altavoz").replace("media_player.", "").replace(/_/g, " ")}
+
+          <!-- Center: Massive Time in Google Sans -->
+          <div
+            class="official-alarm-time"
+            style="
+              color: ${app.timeColor};
+              font-weight: ${app.weight};
+              font-size: calc(6.25rem * ${mult});
+              ${app.glow ? "text-shadow: 0 0 18px rgba(255, 255, 255, 0.45);" : ""}
+            "
+          >
+            ${alarm.time}
           </div>
+
+          <!-- Recurrence Text: Lunes a Viernes -->
+          <div class="official-alarm-days" style="color: ${app.textColor};">
+            ${days}
+          </div>
+
+          <!-- Speaker Row: Altavoz: Salón -->
+          ${app.showSpeaker && alarm.media_player
+            ? html`
+                <div class="official-alarm-speaker" style="color: ${app.subColor};">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                    <path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
+                  </svg>
+                  <span>Altavoz: ${speaker}</span>
+                </div>
+              `
+            : nothing}
         </div>
-        <div class="dialog-actions test-actions">
-          <button class="primary danger-btn" @click=${() => this._stopTest()}>
-            <ha-icon icon="mdi:stop" style="--mdc-icon-size: 18px; margin-right: 4px; vertical-align: -2px;"></ha-icon>
+
+        <!-- Floating action buttons below the card -->
+        <div class="official-test-actions">
+          <button class="official-btn-stop" @click=${() => this._stopTest()}>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <path d="M6,6H18V18H6V6Z"/>
+            </svg>
             Detener sonido
           </button>
-          <button @click=${() => (this._testingAlarm = null)}>Cerrar ventana</button>
+          <button class="official-btn-close" @click=${() => (this._testingAlarm = null)}>
+            Cerrar
+          </button>
         </div>
       </div>
     `;
@@ -848,101 +982,250 @@ export class WakeyPanel extends LitElement {
       color: var(--warning-color, #ffa600);
       font-size: 13px;
     }
-    .live-alarm-preview {
-      background: var(--secondary-background-color, rgba(127, 127, 127, 0.08));
-      border: 1px solid var(--divider-color, rgba(127, 127, 127, 0.15));
-      border-radius: 16px;
-      padding: 16px 20px;
-      margin-bottom: 20px;
-      font-family: var(--ha-font-family, "Google Sans", Roboto, sans-serif);
-      color: var(--primary-text-color, #e8eaed);
-    }
-    .live-alarm-preview.test-mode {
-      border-color: rgba(219, 68, 55, 0.4);
-      background: rgba(219, 68, 55, 0.06);
-    }
-    .preview-header {
+    .speaker-sub {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 6px;
+      gap: 5px;
     }
-    .preview-icon {
+    .speaker-sub ha-icon {
+      --mdc-icon-size: 14px;
+    }
+    .btn-test {
+      color: #1a73e8;
+      border-color: rgba(26, 115, 232, 0.3);
+      display: inline-flex;
+      align-items: center;
+    }
+    .btn-test:hover {
+      background: rgba(26, 115, 232, 0.08);
+    }
+    .live-alarm-preview {
+      background: #282a2d;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 22px 26px;
+      margin-bottom: 20px;
+      font-family: 'Google Sans', var(--ha-font-family, Roboto, sans-serif);
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    .live-alarm-preview .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .live-alarm-preview .preview-icon {
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background: var(--divider-color, rgba(127, 127, 127, 0.15));
+      background: rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--primary-color, #03a9f4);
+      color: #ffffff;
       flex-shrink: 0;
     }
-    .preview-title {
+    .live-alarm-preview .preview-title {
       font-size: 18px;
       font-weight: 500;
+      color: #ffffff;
+      margin: 0 12px;
       flex: 1;
+      text-align: left;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .preview-badge {
+    .live-alarm-preview .preview-badge {
       font-size: 11px;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 4px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 12px;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      flex-shrink: 0;
     }
-    .preview-badge.new {
-      background: rgba(76, 175, 80, 0.15);
-      color: #4caf50;
+    .live-alarm-preview .preview-badge.new {
+      background: #c3e8cd;
+      color: #137333;
     }
-    .preview-badge.edit {
-      background: rgba(3, 169, 244, 0.15);
-      color: var(--primary-color, #03a9f4);
+    .live-alarm-preview .preview-badge.edit {
+      background: #c2e7ff;
+      color: #004a77;
     }
-    .preview-badge.test {
-      background: rgba(219, 68, 55, 0.2);
-      color: var(--error-color, #db4437);
-    }
-    .preview-time {
-      font-size: clamp(2.5rem, 8vw, 3.25rem);
-      font-weight: 500;
-      line-height: 1.1;
-      letter-spacing: -0.02em;
+    .live-alarm-preview .preview-time {
+      font-size: 54px;
+      font-weight: 400;
+      color: #f7f6f2;
+      line-height: 1;
+      letter-spacing: -1.5px;
+      margin: 8px 0 4px 0;
       font-variant-numeric: tabular-nums;
-      margin: 4px 0 2px 0;
     }
-    .preview-sub {
+    .live-alarm-preview .preview-sub {
       font-size: 16px;
-      color: var(--secondary-text-color, #9e9e9e);
-      margin-top: 2px;
+      color: #e8eaed;
+      margin-bottom: 4px;
     }
-    .preview-speaker {
-      font-size: 13px;
-      color: var(--secondary-text-color, #9e9e9e);
-      margin-top: 6px;
+    .live-alarm-preview .preview-speaker {
+      font-size: 14px;
+      color: #dadce0;
       display: flex;
       align-items: center;
-      gap: 4px;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 4px;
     }
-    .preview-speaker ha-icon {
-      --mdc-icon-size: 15px;
+
+    /* Official Alarm View matching assets/alarm.png */
+    .test-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(14, 15, 17, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 1000;
+      animation: official-fade-in 200ms ease;
     }
-    .danger-btn {
-      background: var(--error-color, #db4437) !important;
-      color: #fff !important;
-      border-color: transparent !important;
+    .test-stage {
+      position: fixed;
+      z-index: 1001;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(520px, calc(100vw - 32px));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+      animation: official-scale-in 240ms cubic-bezier(0.16, 1, 0.3, 1);
     }
-    @keyframes wakey-pulse {
-      0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.08); opacity: 0.75; }
-      100% { transform: scale(1); opacity: 1; }
+    .official-alarm-card {
+      width: 100%;
+      background-color: #282a2d;
+      border-radius: 28px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 2px 10px rgba(0, 0, 0, 0.3);
+      box-sizing: border-box;
+      padding: 38px 42px 34px 42px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
     }
-    .pulsing {
-      animation: wakey-pulse 1.4s ease-in-out infinite;
-      color: var(--error-color, #db4437) !important;
+    .official-alarm-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .official-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .official-alarm-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      flex-shrink: 0;
+    }
+    .official-alarm-name {
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .official-alarm-badge {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 6px 18px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      background: #c3e8cd;
+      color: #137333;
+      flex-shrink: 0;
+    }
+    .official-alarm-time {
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      margin: 36px 0 16px 0;
+      letter-spacing: -2px;
+      font-family: inherit;
+      color: #f7f6f2;
+    }
+    .official-alarm-days {
+      font-size: 24px;
+      font-weight: 400;
+      margin-bottom: 12px;
+    }
+    .official-alarm-speaker {
+      font-size: 19px;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .official-test-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+    .official-btn-stop {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #ea4335;
+      color: #ffffff;
+      border: none;
+      padding: 11px 26px;
+      border-radius: 24px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(234, 67, 53, 0.45);
+      transition: transform 120ms ease, background 120ms ease;
+    }
+    .official-btn-stop:hover {
+      background: #d93025;
+      transform: translateY(-1px);
+    }
+    .official-btn-close {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 11px 24px;
+      border-radius: 24px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 120ms ease;
+    }
+    .official-btn-close:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+    @keyframes official-fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes official-scale-in {
+      from { opacity: 0; transform: translate(-50%, -46%) scale(0.95); }
+      to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     }
   `;
 }

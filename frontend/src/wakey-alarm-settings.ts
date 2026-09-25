@@ -52,6 +52,19 @@ export function loadAlarmAppearance(): AlarmAppearanceConfig {
   return { ...DEFAULT_ALARM_APPEARANCE };
 }
 
+export function getAlarmFontFamily(font: string): string {
+  const fonts: Record<string, string> = {
+    "Google Sans": "'Google Sans', var(--ha-font-family, Roboto, system-ui, sans-serif)",
+    Rubik: "'Rubik', sans-serif",
+    Nunito: "'Nunito', sans-serif",
+    Inter: "'Inter', sans-serif",
+    Oswald: "'Oswald', sans-serif",
+    "Roboto Slab": "'Roboto Slab', serif",
+    monospace: "'Courier New', Courier, monospace",
+  };
+  return fonts[font] || fonts["Google Sans"];
+}
+
 export class WakeyAlarmSettings extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ attribute: false }) public alarms: Alarm[] = [];
@@ -106,16 +119,7 @@ export class WakeyAlarmSettings extends LitElement {
   }
 
   private _getFontFamily(font: string): string {
-    const fonts: Record<string, string> = {
-      "Google Sans": "'Google Sans', var(--ha-font-family, Roboto, system-ui, sans-serif)",
-      Rubik: "'Rubik', sans-serif",
-      Nunito: "'Nunito', sans-serif",
-      Inter: "'Inter', sans-serif",
-      Oswald: "'Oswald', sans-serif",
-      "Roboto Slab": "'Roboto Slab', serif",
-      monospace: "'Courier New', Courier, monospace",
-    };
-    return fonts[font] || fonts["Google Sans"];
+    return getAlarmFontFamily(font);
   }
 
   // --- Render Previews ---------------------------------------------------

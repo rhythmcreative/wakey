@@ -107,7 +107,19 @@ class WakeyPlayer:
     def any_ringing(self) -> bool:
         return any(not state.snoozed for state in self.ringing.values())
 
-    # --- firing ------------------------------------------------------------
+    def _dismiss_voice_satellites(self) -> None:
+        """Dismiss screensavers on connected Voice Satellites so ringing alarms and cards are visible."""
+        try:
+            if not hasattr(self.hass, "data") or not isinstance(self.hass.data, dict):
+                return
+            vs_data = self.hass.data.get("voice_satellite", {})
+            if not isinstance(vs_data, dict):
+                return
+            for ent in vs_data.values():
+                if hasattr(ent, "_push_satellite_event"):
+                    ent._push_satellite_event("dismiss_screensaver", {})
+        except Exception as err:
+            _LOGGER.debug("Could not dismiss voice satellite screensavers: %s", err)
 
     async def async_fire(self, alarm: AlarmEntry, was_missed: bool = False) -> None:
         """Start an alarm."""
@@ -129,6 +141,7 @@ class WakeyPlayer:
             {ATTR_ALARM_ID: alarm.id, "name": alarm.name, "missed": was_missed},
         )
 
+        self._dismiss_voice_satellites()
         await self._async_start_playback(alarm, state)
         await self._async_send_ring_notification(alarm, state)
 
@@ -319,6 +332,7 @@ class WakeyPlayer:
         if alarm.repeat_count > 0 and state.play_count >= alarm.repeat_count:
             return
         state.play_count += 1
+        self._dismiss_voice_satellites()
         current = self.hass.states.get(alarm.media_player)
         if current is not None and current.state in (STATE_OFF, STATE_UNKNOWN):
             await self._call("media_player", "turn_on", {ATTR_ENTITY_ID: alarm.media_player})

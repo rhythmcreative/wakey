@@ -1,4 +1,4 @@
-<h1 align="center">Wakey ⏰</h1>
+<h1 align="center">Wakey</h1>
 
 <div align="center">
 

@@ -9,7 +9,7 @@ import {
   type Snapshot,
 } from "./types";
 import "./wakey-admin";
-import "./wakey-clock-settings";
+import "./wakey-alarm-settings";
 
 const DAY_OPTIONS = DAY_LABELS.map((label, i) => ({ value: String(i), label }));
 
@@ -597,7 +597,7 @@ export class WakeyPanel extends LitElement {
             class=${this._view === "settings" ? "selected" : ""}
             @click=${() => (this._view = "settings")}
           >
-            Reloj y Ajustes
+            Ajustes de Alarmas
           </button>
           ${this._isAdmin
             ? html`<button
@@ -622,9 +622,10 @@ export class WakeyPanel extends LitElement {
               .haForm=${this._haForm}
             ></wakey-admin>`
           : this._view === "settings"
-            ? html`<wakey-clock-settings
+            ? html`<wakey-alarm-settings
                 .hass=${this.hass}
-              ></wakey-clock-settings>`
+                .alarms=${this._alarms}
+              ></wakey-alarm-settings>`
             : html`${this._renderRinging()} ${this._renderAlarms()}`}
       </div>
 

@@ -3,18 +3,18 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const J = globalThis, se = J.ShadowRoot && (J.ShadyCSS === void 0 || J.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, re = Symbol(), ce = /* @__PURE__ */ new WeakMap();
-let xe = class {
+const H = globalThis, K = H.ShadowRoot && (H.ShadyCSS === void 0 || H.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Y = Symbol(), ie = /* @__PURE__ */ new WeakMap();
+let ue = class {
   constructor(e, t, i) {
-    if (this._$cssResult$ = !0, i !== re) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    if (this._$cssResult$ = !0, i !== Y) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = e, this.t = t;
   }
   get styleSheet() {
     let e = this.o;
     const t = this.t;
-    if (se && e === void 0) {
+    if (K && e === void 0) {
       const i = t !== void 0 && t.length === 1;
-      i && (e = ce.get(t)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), i && ce.set(t, e));
+      i && (e = ie.get(t)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), i && ie.set(t, e));
     }
     return e;
   }
@@ -22,33 +22,33 @@ let xe = class {
     return this.cssText;
   }
 };
-const je = (r) => new xe(typeof r == "string" ? r : r + "", void 0, re), oe = (r, ...e) => {
-  const t = r.length === 1 ? r[0] : e.reduce((i, s, o) => i + ((a) => {
-    if (a._$cssResult$ === !0) return a.cssText;
-    if (typeof a == "number") return a;
-    throw Error("Value passed to 'css' function must be a 'css' function result: " + a + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
-  })(s) + r[o + 1], r[0]);
-  return new xe(t, r, re);
-}, Ne = (r, e) => {
-  if (se) r.adoptedStyleSheets = e.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
+const be = (r) => new ue(typeof r == "string" ? r : r + "", void 0, Y), Z = (r, ...e) => {
+  const t = r.length === 1 ? r[0] : e.reduce((i, a, s) => i + ((o) => {
+    if (o._$cssResult$ === !0) return o.cssText;
+    if (typeof o == "number") return o;
+    throw Error("Value passed to 'css' function must be a 'css' function result: " + o + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
+  })(a) + r[s + 1], r[0]);
+  return new ue(t, r, Y);
+}, ye = (r, e) => {
+  if (K) r.adoptedStyleSheets = e.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
   else for (const t of e) {
-    const i = document.createElement("style"), s = J.litNonce;
-    s !== void 0 && i.setAttribute("nonce", s), i.textContent = t.cssText, r.appendChild(i);
+    const i = document.createElement("style"), a = H.litNonce;
+    a !== void 0 && i.setAttribute("nonce", a), i.textContent = t.cssText, r.appendChild(i);
   }
-}, pe = se ? (r) => r : (r) => r instanceof CSSStyleSheet ? ((e) => {
+}, ae = K ? (r) => r : (r) => r instanceof CSSStyleSheet ? ((e) => {
   let t = "";
   for (const i of e.cssRules) t += i.cssText;
-  return je(t);
+  return be(t);
 })(r) : r;
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Oe, defineProperty: Me, getOwnPropertyDescriptor: Re, getOwnPropertyNames: De, getOwnPropertySymbols: Ue, getPrototypeOf: He } = Object, X = globalThis, he = X.trustedTypes, Le = he ? he.emptyScript : "", Ie = X.reactiveElementPolyfillSupport, L = (r, e) => r, Z = { toAttribute(r, e) {
+const { is: xe, defineProperty: we, getOwnPropertyDescriptor: $e, getOwnPropertyNames: ke, getOwnPropertySymbols: Ae, getPrototypeOf: Se } = Object, I = globalThis, re = I.trustedTypes, Ce = re ? re.emptyScript : "", Ee = I.reactiveElementPolyfillSupport, N = (r, e) => r, B = { toAttribute(r, e) {
   switch (e) {
     case Boolean:
-      r = r ? Le : null;
+      r = r ? Ce : null;
       break;
     case Object:
     case Array:
@@ -73,55 +73,55 @@ const { is: Oe, defineProperty: Me, getOwnPropertyDescriptor: Re, getOwnProperty
       }
   }
   return t;
-} }, ae = (r, e) => !Oe(r, e), ue = { attribute: !0, type: String, converter: Z, reflect: !1, useDefault: !1, hasChanged: ae };
-Symbol.metadata ??= Symbol("metadata"), X.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
-let R = class extends HTMLElement {
+} }, X = (r, e) => !xe(r, e), se = { attribute: !0, type: String, converter: B, reflect: !1, useDefault: !1, hasChanged: X };
+Symbol.metadata ??= Symbol("metadata"), I.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
+let E = class extends HTMLElement {
   static addInitializer(e) {
     this._$Ei(), (this.l ??= []).push(e);
   }
   static get observedAttributes() {
     return this.finalize(), this._$Eh && [...this._$Eh.keys()];
   }
-  static createProperty(e, t = ue) {
+  static createProperty(e, t = se) {
     if (t.state && (t.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((t = Object.create(t)).wrapped = !0), this.elementProperties.set(e, t), !t.noAccessor) {
-      const i = Symbol(), s = this.getPropertyDescriptor(e, i, t);
-      s !== void 0 && Me(this.prototype, e, s);
+      const i = Symbol(), a = this.getPropertyDescriptor(e, i, t);
+      a !== void 0 && we(this.prototype, e, a);
     }
   }
   static getPropertyDescriptor(e, t, i) {
-    const { get: s, set: o } = Re(this.prototype, e) ?? { get() {
+    const { get: a, set: s } = $e(this.prototype, e) ?? { get() {
       return this[t];
-    }, set(a) {
-      this[t] = a;
+    }, set(o) {
+      this[t] = o;
     } };
-    return { get: s, set(a) {
-      const c = s?.call(this);
-      o?.call(this, a), this.requestUpdate(e, c, i);
+    return { get: a, set(o) {
+      const c = a?.call(this);
+      s?.call(this, o), this.requestUpdate(e, c, i);
     }, configurable: !0, enumerable: !0 };
   }
   static getPropertyOptions(e) {
-    return this.elementProperties.get(e) ?? ue;
+    return this.elementProperties.get(e) ?? se;
   }
   static _$Ei() {
-    if (this.hasOwnProperty(L("elementProperties"))) return;
-    const e = He(this);
+    if (this.hasOwnProperty(N("elementProperties"))) return;
+    const e = Se(this);
     e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
   }
   static finalize() {
-    if (this.hasOwnProperty(L("finalized"))) return;
-    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(L("properties"))) {
-      const t = this.properties, i = [...De(t), ...Ue(t)];
-      for (const s of i) this.createProperty(s, t[s]);
+    if (this.hasOwnProperty(N("finalized"))) return;
+    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(N("properties"))) {
+      const t = this.properties, i = [...ke(t), ...Ae(t)];
+      for (const a of i) this.createProperty(a, t[a]);
     }
     const e = this[Symbol.metadata];
     if (e !== null) {
       const t = litPropertyMetadata.get(e);
-      if (t !== void 0) for (const [i, s] of t) this.elementProperties.set(i, s);
+      if (t !== void 0) for (const [i, a] of t) this.elementProperties.set(i, a);
     }
     this._$Eh = /* @__PURE__ */ new Map();
     for (const [t, i] of this.elementProperties) {
-      const s = this._$Eu(t, i);
-      s !== void 0 && this._$Eh.set(s, t);
+      const a = this._$Eu(t, i);
+      a !== void 0 && this._$Eh.set(a, t);
     }
     this.elementStyles = this.finalizeStyles(this.styles);
   }
@@ -129,8 +129,8 @@ let R = class extends HTMLElement {
     const t = [];
     if (Array.isArray(e)) {
       const i = new Set(e.flat(1 / 0).reverse());
-      for (const s of i) t.unshift(pe(s));
-    } else e !== void 0 && t.push(pe(e));
+      for (const a of i) t.unshift(ae(a));
+    } else e !== void 0 && t.push(ae(e));
     return t;
   }
   static _$Eu(e, t) {
@@ -156,7 +156,7 @@ let R = class extends HTMLElement {
   }
   createRenderRoot() {
     const e = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-    return Ne(e, this.constructor.elementStyles), e;
+    return ye(e, this.constructor.elementStyles), e;
   }
   connectedCallback() {
     this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(!0), this._$EO?.forEach((e) => e.hostConnected?.());
@@ -170,31 +170,31 @@ let R = class extends HTMLElement {
     this._$AK(e, i);
   }
   _$ET(e, t) {
-    const i = this.constructor.elementProperties.get(e), s = this.constructor._$Eu(e, i);
-    if (s !== void 0 && i.reflect === !0) {
-      const o = (i.converter?.toAttribute !== void 0 ? i.converter : Z).toAttribute(t, i.type);
-      this._$Em = e, o == null ? this.removeAttribute(s) : this.setAttribute(s, o), this._$Em = null;
+    const i = this.constructor.elementProperties.get(e), a = this.constructor._$Eu(e, i);
+    if (a !== void 0 && i.reflect === !0) {
+      const s = (i.converter?.toAttribute !== void 0 ? i.converter : B).toAttribute(t, i.type);
+      this._$Em = e, s == null ? this.removeAttribute(a) : this.setAttribute(a, s), this._$Em = null;
     }
   }
   _$AK(e, t) {
-    const i = this.constructor, s = i._$Eh.get(e);
-    if (s !== void 0 && this._$Em !== s) {
-      const o = i.getPropertyOptions(s), a = typeof o.converter == "function" ? { fromAttribute: o.converter } : o.converter?.fromAttribute !== void 0 ? o.converter : Z;
-      this._$Em = s;
-      const c = a.fromAttribute(t, o.type);
-      this[s] = c ?? this._$Ej?.get(s) ?? c, this._$Em = null;
+    const i = this.constructor, a = i._$Eh.get(e);
+    if (a !== void 0 && this._$Em !== a) {
+      const s = i.getPropertyOptions(a), o = typeof s.converter == "function" ? { fromAttribute: s.converter } : s.converter?.fromAttribute !== void 0 ? s.converter : B;
+      this._$Em = a;
+      const c = o.fromAttribute(t, s.type);
+      this[a] = c ?? this._$Ej?.get(a) ?? c, this._$Em = null;
     }
   }
-  requestUpdate(e, t, i, s = !1, o) {
+  requestUpdate(e, t, i, a = !1, s) {
     if (e !== void 0) {
-      const a = this.constructor;
-      if (s === !1 && (o = this[e]), i ??= a.getPropertyOptions(e), !((i.hasChanged ?? ae)(o, t) || i.useDefault && i.reflect && o === this._$Ej?.get(e) && !this.hasAttribute(a._$Eu(e, i)))) return;
+      const o = this.constructor;
+      if (a === !1 && (s = this[e]), i ??= o.getPropertyOptions(e), !((i.hasChanged ?? X)(s, t) || i.useDefault && i.reflect && s === this._$Ej?.get(e) && !this.hasAttribute(o._$Eu(e, i)))) return;
       this.C(e, t, i);
     }
     this.isUpdatePending === !1 && (this._$ES = this._$EP());
   }
-  C(e, t, { useDefault: i, reflect: s, wrapped: o }, a) {
-    i && !(this._$Ej ??= /* @__PURE__ */ new Map()).has(e) && (this._$Ej.set(e, a ?? t ?? this[e]), o !== !0 || a !== void 0) || (this._$AL.has(e) || (this.hasUpdated || i || (t = void 0), this._$AL.set(e, t)), s === !0 && this._$Em !== e && (this._$Eq ??= /* @__PURE__ */ new Set()).add(e));
+  C(e, t, { useDefault: i, reflect: a, wrapped: s }, o) {
+    i && !(this._$Ej ??= /* @__PURE__ */ new Map()).has(e) && (this._$Ej.set(e, o ?? t ?? this[e]), s !== !0 || o !== void 0) || (this._$AL.has(e) || (this.hasUpdated || i || (t = void 0), this._$AL.set(e, t)), a === !0 && this._$Em !== e && (this._$Eq ??= /* @__PURE__ */ new Set()).add(e));
   }
   async _$EP() {
     this.isUpdatePending = !0;
@@ -213,13 +213,13 @@ let R = class extends HTMLElement {
     if (!this.isUpdatePending) return;
     if (!this.hasUpdated) {
       if (this.renderRoot ??= this.createRenderRoot(), this._$Ep) {
-        for (const [s, o] of this._$Ep) this[s] = o;
+        for (const [a, s] of this._$Ep) this[a] = s;
         this._$Ep = void 0;
       }
       const i = this.constructor.elementProperties;
-      if (i.size > 0) for (const [s, o] of i) {
-        const { wrapped: a } = o, c = this[s];
-        a !== !0 || this._$AL.has(s) || c === void 0 || this.C(s, void 0, o, c);
+      if (i.size > 0) for (const [a, s] of i) {
+        const { wrapped: o } = s, c = this[a];
+        o !== !0 || this._$AL.has(a) || c === void 0 || this.C(a, void 0, s, c);
       }
     }
     let e = !1;
@@ -256,75 +256,75 @@ let R = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-R.elementStyles = [], R.shadowRootOptions = { mode: "open" }, R[L("elementProperties")] = /* @__PURE__ */ new Map(), R[L("finalized")] = /* @__PURE__ */ new Map(), Ie?.({ ReactiveElement: R }), (X.reactiveElementVersions ??= []).push("2.1.2");
+E.elementStyles = [], E.shadowRootOptions = { mode: "open" }, E[N("elementProperties")] = /* @__PURE__ */ new Map(), E[N("finalized")] = /* @__PURE__ */ new Map(), Ee?.({ ReactiveElement: E }), (I.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ne = globalThis, ge = (r) => r, Y = ne.trustedTypes, fe = Y ? Y.createPolicy("lit-html", { createHTML: (r) => r }) : void 0, we = "$lit$", A = `lit$${Math.random().toFixed(9).slice(2)}$`, ke = "?" + A, Fe = `<${ke}>`, N = document, I = () => N.createComment(""), F = (r) => r === null || typeof r != "object" && typeof r != "function", le = Array.isArray, Be = (r) => le(r) || typeof r?.[Symbol.iterator] == "function", ie = `[ 	
-\f\r]`, H = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, me = /-->/g, ve = />/g, z = RegExp(`>|${ie}(?:([^\\s"'>=/]+)(${ie}*=${ie}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), _e = /'/g, ye = /"/g, Ae = /^(?:script|style|textarea|title)$/i, Ve = (r) => (e, ...t) => ({ _$litType$: r, strings: e, values: t }), n = Ve(1), D = Symbol.for("lit-noChange"), l = Symbol.for("lit-nothing"), be = /* @__PURE__ */ new WeakMap(), P = N.createTreeWalker(N, 129);
-function Ce(r, e) {
-  if (!le(r) || !r.hasOwnProperty("raw")) throw Error("invalid template strings array");
-  return fe !== void 0 ? fe.createHTML(e) : e;
+const Q = globalThis, oe = (r) => r, F = Q.trustedTypes, ne = F ? F.createPolicy("lit-html", { createHTML: (r) => r }) : void 0, me = "$lit$", x = `lit$${Math.random().toFixed(9).slice(2)}$`, ge = "?" + x, ze = `<${ge}>`, C = document, O = () => C.createComment(""), j = (r) => r === null || typeof r != "object" && typeof r != "function", ee = Array.isArray, Pe = (r) => ee(r) || typeof r?.[Symbol.iterator] == "function", G = `[ 	
+\f\r]`, T = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, le = /-->/g, de = />/g, k = RegExp(`>|${G}(?:([^\\s"'>=/]+)(${G}*=${G}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), ce = /'/g, pe = /"/g, fe = /^(?:script|style|textarea|title)$/i, Te = (r) => (e, ...t) => ({ _$litType$: r, strings: e, values: t }), n = Te(1), z = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), he = /* @__PURE__ */ new WeakMap(), A = C.createTreeWalker(C, 129);
+function ve(r, e) {
+  if (!ee(r) || !r.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  return ne !== void 0 ? ne.createHTML(e) : e;
 }
-const We = (r, e) => {
+const Ne = (r, e) => {
   const t = r.length - 1, i = [];
-  let s, o = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", a = H;
+  let a, s = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", o = T;
   for (let c = 0; c < t; c++) {
-    const d = r[c];
-    let u, g, p = -1, m = 0;
-    for (; m < d.length && (a.lastIndex = m, g = a.exec(d), g !== null); ) m = a.lastIndex, a === H ? g[1] === "!--" ? a = me : g[1] !== void 0 ? a = ve : g[2] !== void 0 ? (Ae.test(g[2]) && (s = RegExp("</" + g[2], "g")), a = z) : g[3] !== void 0 && (a = z) : a === z ? g[0] === ">" ? (a = s ?? H, p = -1) : g[1] === void 0 ? p = -2 : (p = a.lastIndex - g[2].length, u = g[1], a = g[3] === void 0 ? z : g[3] === '"' ? ye : _e) : a === ye || a === _e ? a = z : a === me || a === ve ? a = H : (a = z, s = void 0);
-    const h = a === z && r[c + 1].startsWith("/>") ? " " : "";
-    o += a === H ? d + Fe : p >= 0 ? (i.push(u), d.slice(0, p) + we + d.slice(p) + A + h) : d + A + (p === -2 ? c : h);
+    const l = r[c];
+    let h, u, p = -1, v = 0;
+    for (; v < l.length && (o.lastIndex = v, u = o.exec(l), u !== null); ) v = o.lastIndex, o === T ? u[1] === "!--" ? o = le : u[1] !== void 0 ? o = de : u[2] !== void 0 ? (fe.test(u[2]) && (a = RegExp("</" + u[2], "g")), o = k) : u[3] !== void 0 && (o = k) : o === k ? u[0] === ">" ? (o = a ?? T, p = -1) : u[1] === void 0 ? p = -2 : (p = o.lastIndex - u[2].length, h = u[1], o = u[3] === void 0 ? k : u[3] === '"' ? pe : ce) : o === pe || o === ce ? o = k : o === le || o === de ? o = T : (o = k, a = void 0);
+    const _ = o === k && r[c + 1].startsWith("/>") ? " " : "";
+    s += o === T ? l + ze : p >= 0 ? (i.push(h), l.slice(0, p) + me + l.slice(p) + x + _) : l + x + (p === -2 ? c : _);
   }
-  return [Ce(r, o + (r[t] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), i];
+  return [ve(r, s + (r[t] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), i];
 };
-class B {
+class M {
   constructor({ strings: e, _$litType$: t }, i) {
-    let s;
+    let a;
     this.parts = [];
-    let o = 0, a = 0;
-    const c = e.length - 1, d = this.parts, [u, g] = We(e, t);
-    if (this.el = B.createElement(u, i), P.currentNode = this.el.content, t === 2 || t === 3) {
+    let s = 0, o = 0;
+    const c = e.length - 1, l = this.parts, [h, u] = Ne(e, t);
+    if (this.el = M.createElement(h, i), A.currentNode = this.el.content, t === 2 || t === 3) {
       const p = this.el.content.firstChild;
       p.replaceWith(...p.childNodes);
     }
-    for (; (s = P.nextNode()) !== null && d.length < c; ) {
-      if (s.nodeType === 1) {
-        if (s.hasAttributes()) for (const p of s.getAttributeNames()) if (p.endsWith(we)) {
-          const m = g[a++], h = s.getAttribute(p).split(A), b = /([.?@])?(.*)/.exec(m);
-          d.push({ type: 1, index: o, name: b[2], strings: h, ctor: b[1] === "." ? Ge : b[1] === "?" ? Je : b[1] === "@" ? Ke : Q }), s.removeAttribute(p);
-        } else p.startsWith(A) && (d.push({ type: 6, index: o }), s.removeAttribute(p));
-        if (Ae.test(s.tagName)) {
-          const p = s.textContent.split(A), m = p.length - 1;
-          if (m > 0) {
-            s.textContent = Y ? Y.emptyScript : "";
-            for (let h = 0; h < m; h++) s.append(p[h], I()), P.nextNode(), d.push({ type: 2, index: ++o });
-            s.append(p[m], I());
+    for (; (a = A.nextNode()) !== null && l.length < c; ) {
+      if (a.nodeType === 1) {
+        if (a.hasAttributes()) for (const p of a.getAttributeNames()) if (p.endsWith(me)) {
+          const v = u[o++], _ = a.getAttribute(p).split(x), y = /([.?@])?(.*)/.exec(v);
+          l.push({ type: 1, index: s, name: y[2], strings: _, ctor: y[1] === "." ? je : y[1] === "?" ? Me : y[1] === "@" ? Re : V }), a.removeAttribute(p);
+        } else p.startsWith(x) && (l.push({ type: 6, index: s }), a.removeAttribute(p));
+        if (fe.test(a.tagName)) {
+          const p = a.textContent.split(x), v = p.length - 1;
+          if (v > 0) {
+            a.textContent = F ? F.emptyScript : "";
+            for (let _ = 0; _ < v; _++) a.append(p[_], O()), A.nextNode(), l.push({ type: 2, index: ++s });
+            a.append(p[v], O());
           }
         }
-      } else if (s.nodeType === 8) if (s.data === ke) d.push({ type: 2, index: o });
+      } else if (a.nodeType === 8) if (a.data === ge) l.push({ type: 2, index: s });
       else {
         let p = -1;
-        for (; (p = s.data.indexOf(A, p + 1)) !== -1; ) d.push({ type: 7, index: o }), p += A.length - 1;
+        for (; (p = a.data.indexOf(x, p + 1)) !== -1; ) l.push({ type: 7, index: s }), p += x.length - 1;
       }
-      o++;
+      s++;
     }
   }
   static createElement(e, t) {
-    const i = N.createElement("template");
+    const i = C.createElement("template");
     return i.innerHTML = e, i;
   }
 }
-function U(r, e, t = r, i) {
-  if (e === D) return e;
-  let s = i !== void 0 ? t._$Co?.[i] : t._$Cl;
-  const o = F(e) ? void 0 : e._$litDirective$;
-  return s?.constructor !== o && (s?._$AO?.(!1), o === void 0 ? s = void 0 : (s = new o(r), s._$AT(r, t, i)), i !== void 0 ? (t._$Co ??= [])[i] = s : t._$Cl = s), s !== void 0 && (e = U(r, s._$AS(r, e.values), s, i)), e;
+function P(r, e, t = r, i) {
+  if (e === z) return e;
+  let a = i !== void 0 ? t._$Co?.[i] : t._$Cl;
+  const s = j(e) ? void 0 : e._$litDirective$;
+  return a?.constructor !== s && (a?._$AO?.(!1), s === void 0 ? a = void 0 : (a = new s(r), a._$AT(r, t, i)), i !== void 0 ? (t._$Co ??= [])[i] = a : t._$Cl = a), a !== void 0 && (e = P(r, a._$AS(r, e.values), a, i)), e;
 }
-class qe {
+class Oe {
   constructor(e, t) {
     this._$AV = [], this._$AN = void 0, this._$AD = e, this._$AM = t;
   }
@@ -335,29 +335,29 @@ class qe {
     return this._$AM._$AU;
   }
   u(e) {
-    const { el: { content: t }, parts: i } = this._$AD, s = (e?.creationScope ?? N).importNode(t, !0);
-    P.currentNode = s;
-    let o = P.nextNode(), a = 0, c = 0, d = i[0];
-    for (; d !== void 0; ) {
-      if (a === d.index) {
-        let u;
-        d.type === 2 ? u = new V(o, o.nextSibling, this, e) : d.type === 1 ? u = new d.ctor(o, d.name, d.strings, this, e) : d.type === 6 && (u = new Ze(o, this, e)), this._$AV.push(u), d = i[++c];
+    const { el: { content: t }, parts: i } = this._$AD, a = (e?.creationScope ?? C).importNode(t, !0);
+    A.currentNode = a;
+    let s = A.nextNode(), o = 0, c = 0, l = i[0];
+    for (; l !== void 0; ) {
+      if (o === l.index) {
+        let h;
+        l.type === 2 ? h = new R(s, s.nextSibling, this, e) : l.type === 1 ? h = new l.ctor(s, l.name, l.strings, this, e) : l.type === 6 && (h = new De(s, this, e)), this._$AV.push(h), l = i[++c];
       }
-      a !== d?.index && (o = P.nextNode(), a++);
+      o !== l?.index && (s = A.nextNode(), o++);
     }
-    return P.currentNode = N, s;
+    return A.currentNode = C, a;
   }
   p(e) {
     let t = 0;
     for (const i of this._$AV) i !== void 0 && (i.strings !== void 0 ? (i._$AI(e, i, t), t += i.strings.length - 2) : i._$AI(e[t])), t++;
   }
 }
-class V {
+class R {
   get _$AU() {
     return this._$AM?._$AU ?? this._$Cv;
   }
-  constructor(e, t, i, s) {
-    this.type = 2, this._$AH = l, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = i, this.options = s, this._$Cv = s?.isConnected ?? !0;
+  constructor(e, t, i, a) {
+    this.type = 2, this._$AH = d, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = i, this.options = a, this._$Cv = a?.isConnected ?? !0;
   }
   get parentNode() {
     let e = this._$AA.parentNode;
@@ -371,7 +371,7 @@ class V {
     return this._$AB;
   }
   _$AI(e, t = this) {
-    e = U(this, e, t), F(e) ? e === l || e == null || e === "" ? (this._$AH !== l && this._$AR(), this._$AH = l) : e !== this._$AH && e !== D && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : Be(e) ? this.k(e) : this._(e);
+    e = P(this, e, t), j(e) ? e === d || e == null || e === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : e !== this._$AH && e !== z && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : Pe(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -380,92 +380,92 @@ class V {
     this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
   }
   _(e) {
-    this._$AH !== l && F(this._$AH) ? this._$AA.nextSibling.data = e : this.T(N.createTextNode(e)), this._$AH = e;
+    this._$AH !== d && j(this._$AH) ? this._$AA.nextSibling.data = e : this.T(C.createTextNode(e)), this._$AH = e;
   }
   $(e) {
-    const { values: t, _$litType$: i } = e, s = typeof i == "number" ? this._$AC(e) : (i.el === void 0 && (i.el = B.createElement(Ce(i.h, i.h[0]), this.options)), i);
-    if (this._$AH?._$AD === s) this._$AH.p(t);
+    const { values: t, _$litType$: i } = e, a = typeof i == "number" ? this._$AC(e) : (i.el === void 0 && (i.el = M.createElement(ve(i.h, i.h[0]), this.options)), i);
+    if (this._$AH?._$AD === a) this._$AH.p(t);
     else {
-      const o = new qe(s, this), a = o.u(this.options);
-      o.p(t), this.T(a), this._$AH = o;
+      const s = new Oe(a, this), o = s.u(this.options);
+      s.p(t), this.T(o), this._$AH = s;
     }
   }
   _$AC(e) {
-    let t = be.get(e.strings);
-    return t === void 0 && be.set(e.strings, t = new B(e)), t;
+    let t = he.get(e.strings);
+    return t === void 0 && he.set(e.strings, t = new M(e)), t;
   }
   k(e) {
-    le(this._$AH) || (this._$AH = [], this._$AR());
+    ee(this._$AH) || (this._$AH = [], this._$AR());
     const t = this._$AH;
-    let i, s = 0;
-    for (const o of e) s === t.length ? t.push(i = new V(this.O(I()), this.O(I()), this, this.options)) : i = t[s], i._$AI(o), s++;
-    s < t.length && (this._$AR(i && i._$AB.nextSibling, s), t.length = s);
+    let i, a = 0;
+    for (const s of e) a === t.length ? t.push(i = new R(this.O(O()), this.O(O()), this, this.options)) : i = t[a], i._$AI(s), a++;
+    a < t.length && (this._$AR(i && i._$AB.nextSibling, a), t.length = a);
   }
   _$AR(e = this._$AA.nextSibling, t) {
     for (this._$AP?.(!1, !0, t); e !== this._$AB; ) {
-      const i = ge(e).nextSibling;
-      ge(e).remove(), e = i;
+      const i = oe(e).nextSibling;
+      oe(e).remove(), e = i;
     }
   }
   setConnected(e) {
     this._$AM === void 0 && (this._$Cv = e, this._$AP?.(e));
   }
 }
-class Q {
+class V {
   get tagName() {
     return this.element.tagName;
   }
   get _$AU() {
     return this._$AM._$AU;
   }
-  constructor(e, t, i, s, o) {
-    this.type = 1, this._$AH = l, this._$AN = void 0, this.element = e, this.name = t, this._$AM = s, this.options = o, i.length > 2 || i[0] !== "" || i[1] !== "" ? (this._$AH = Array(i.length - 1).fill(new String()), this.strings = i) : this._$AH = l;
+  constructor(e, t, i, a, s) {
+    this.type = 1, this._$AH = d, this._$AN = void 0, this.element = e, this.name = t, this._$AM = a, this.options = s, i.length > 2 || i[0] !== "" || i[1] !== "" ? (this._$AH = Array(i.length - 1).fill(new String()), this.strings = i) : this._$AH = d;
   }
-  _$AI(e, t = this, i, s) {
-    const o = this.strings;
-    let a = !1;
-    if (o === void 0) e = U(this, e, t, 0), a = !F(e) || e !== this._$AH && e !== D, a && (this._$AH = e);
+  _$AI(e, t = this, i, a) {
+    const s = this.strings;
+    let o = !1;
+    if (s === void 0) e = P(this, e, t, 0), o = !j(e) || e !== this._$AH && e !== z, o && (this._$AH = e);
     else {
       const c = e;
-      let d, u;
-      for (e = o[0], d = 0; d < o.length - 1; d++) u = U(this, c[i + d], t, d), u === D && (u = this._$AH[d]), a ||= !F(u) || u !== this._$AH[d], u === l ? e = l : e !== l && (e += (u ?? "") + o[d + 1]), this._$AH[d] = u;
+      let l, h;
+      for (e = s[0], l = 0; l < s.length - 1; l++) h = P(this, c[i + l], t, l), h === z && (h = this._$AH[l]), o ||= !j(h) || h !== this._$AH[l], h === d ? e = d : e !== d && (e += (h ?? "") + s[l + 1]), this._$AH[l] = h;
     }
-    a && !s && this.j(e);
+    o && !a && this.j(e);
   }
   j(e) {
-    e === l ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
+    e === d ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
   }
 }
-class Ge extends Q {
+class je extends V {
   constructor() {
     super(...arguments), this.type = 3;
   }
   j(e) {
-    this.element[this.name] = e === l ? void 0 : e;
+    this.element[this.name] = e === d ? void 0 : e;
   }
 }
-class Je extends Q {
+class Me extends V {
   constructor() {
     super(...arguments), this.type = 4;
   }
   j(e) {
-    this.element.toggleAttribute(this.name, !!e && e !== l);
+    this.element.toggleAttribute(this.name, !!e && e !== d);
   }
 }
-class Ke extends Q {
-  constructor(e, t, i, s, o) {
-    super(e, t, i, s, o), this.type = 5;
+class Re extends V {
+  constructor(e, t, i, a, s) {
+    super(e, t, i, a, s), this.type = 5;
   }
   _$AI(e, t = this) {
-    if ((e = U(this, e, t, 0) ?? l) === D) return;
-    const i = this._$AH, s = e === l && i !== l || e.capture !== i.capture || e.once !== i.once || e.passive !== i.passive, o = e !== l && (i === l || s);
-    s && this.element.removeEventListener(this.name, this, i), o && this.element.addEventListener(this.name, this, e), this._$AH = e;
+    if ((e = P(this, e, t, 0) ?? d) === z) return;
+    const i = this._$AH, a = e === d && i !== d || e.capture !== i.capture || e.once !== i.once || e.passive !== i.passive, s = e !== d && (i === d || a);
+    a && this.element.removeEventListener(this.name, this, i), s && this.element.addEventListener(this.name, this, e), this._$AH = e;
   }
   handleEvent(e) {
     typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, e) : this._$AH.handleEvent(e);
   }
 }
-class Ze {
+class De {
   constructor(e, t, i) {
     this.element = e, this.type = 6, this._$AN = void 0, this._$AM = t, this.options = i;
   }
@@ -473,27 +473,27 @@ class Ze {
     return this._$AM._$AU;
   }
   _$AI(e) {
-    U(this, e);
+    P(this, e);
   }
 }
-const Ye = ne.litHtmlPolyfillSupport;
-Ye?.(B, V), (ne.litHtmlVersions ??= []).push("3.3.3");
-const Xe = (r, e, t) => {
+const Ue = Q.litHtmlPolyfillSupport;
+Ue?.(M, R), (Q.litHtmlVersions ??= []).push("3.3.3");
+const He = (r, e, t) => {
   const i = t?.renderBefore ?? e;
-  let s = i._$litPart$;
-  if (s === void 0) {
-    const o = t?.renderBefore ?? null;
-    i._$litPart$ = s = new V(e.insertBefore(I(), o), o, void 0, t ?? {});
+  let a = i._$litPart$;
+  if (a === void 0) {
+    const s = t?.renderBefore ?? null;
+    i._$litPart$ = a = new R(e.insertBefore(O(), s), s, void 0, t ?? {});
   }
-  return s._$AI(r), s;
+  return a._$AI(r), a;
 };
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const de = globalThis;
-class j extends R {
+const te = globalThis;
+class S extends E {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -503,7 +503,7 @@ class j extends R {
   }
   update(e) {
     const t = this.render();
-    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Xe(t, this.renderRoot, this.renderOptions);
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = He(t, this.renderRoot, this.renderOptions);
   }
   connectedCallback() {
     super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -512,43 +512,43 @@ class j extends R {
     super.disconnectedCallback(), this._$Do?.setConnected(!1);
   }
   render() {
-    return D;
+    return z;
   }
 }
-j._$litElement$ = !0, j.finalized = !0, de.litElementHydrateSupport?.({ LitElement: j });
-const Qe = de.litElementPolyfillSupport;
-Qe?.({ LitElement: j });
-(de.litElementVersions ??= []).push("4.2.2");
+S._$litElement$ = !0, S.finalized = !0, te.litElementHydrateSupport?.({ LitElement: S });
+const Le = te.litElementPolyfillSupport;
+Le?.({ LitElement: S });
+(te.litElementVersions ??= []).push("4.2.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const et = { attribute: !0, type: String, converter: Z, reflect: !1, hasChanged: ae }, tt = (r = et, e, t) => {
-  const { kind: i, metadata: s } = t;
-  let o = globalThis.litPropertyMetadata.get(s);
-  if (o === void 0 && globalThis.litPropertyMetadata.set(s, o = /* @__PURE__ */ new Map()), i === "setter" && ((r = Object.create(r)).wrapped = !0), o.set(t.name, r), i === "accessor") {
-    const { name: a } = t;
+const Be = { attribute: !0, type: String, converter: B, reflect: !1, hasChanged: X }, Fe = (r = Be, e, t) => {
+  const { kind: i, metadata: a } = t;
+  let s = globalThis.litPropertyMetadata.get(a);
+  if (s === void 0 && globalThis.litPropertyMetadata.set(a, s = /* @__PURE__ */ new Map()), i === "setter" && ((r = Object.create(r)).wrapped = !0), s.set(t.name, r), i === "accessor") {
+    const { name: o } = t;
     return { set(c) {
-      const d = e.get.call(this);
-      e.set.call(this, c), this.requestUpdate(a, d, r, !0, c);
+      const l = e.get.call(this);
+      e.set.call(this, c), this.requestUpdate(o, l, r, !0, c);
     }, init(c) {
-      return c !== void 0 && this.C(a, void 0, r, c), c;
+      return c !== void 0 && this.C(o, void 0, r, c), c;
     } };
   }
   if (i === "setter") {
-    const { name: a } = t;
+    const { name: o } = t;
     return function(c) {
-      const d = this[a];
-      e.call(this, c), this.requestUpdate(a, d, r, !0, c);
+      const l = this[o];
+      e.call(this, c), this.requestUpdate(o, l, r, !0, c);
     };
   }
   throw Error("Unsupported decorator location: " + i);
 };
-function O(r) {
-  return (e, t) => typeof t == "object" ? tt(r, e, t) : ((i, s, o) => {
-    const a = s.hasOwnProperty(o);
-    return s.constructor.createProperty(o, i), a ? Object.getOwnPropertyDescriptor(s, o) : void 0;
+function w(r) {
+  return (e, t) => typeof t == "object" ? Fe(r, e, t) : ((i, a, s) => {
+    const o = a.hasOwnProperty(s);
+    return a.constructor.createProperty(s, i), o ? Object.getOwnPropertyDescriptor(a, s) : void 0;
   })(r, e, t);
 }
 /**
@@ -556,10 +556,10 @@ function O(r) {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function f(r) {
-  return O({ ...r, state: !0, attribute: !1 });
+function m(r) {
+  return w({ ...r, state: !0, attribute: !1 });
 }
-const K = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], it = () => ({
+const L = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], Ie = () => ({
   name: "Alarm",
   time: "07:00",
   repeat: "weekly",
@@ -576,7 +576,7 @@ const K = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], it = () => ({
   repeat_count: 0,
   resume_previous: !1
 });
-async function st() {
+async function Ve() {
   try {
     await (await (await window.loadCardHelpers?.())?.createCardElement({ type: "entities", entities: [] }))?.constructor?.getConfigElement?.();
   } catch {
@@ -586,12 +586,12 @@ async function st() {
     new Promise((r) => setTimeout(() => r(!1), 4e3))
   ]);
 }
-var rt = Object.defineProperty, C = (r, e, t, i) => {
-  for (var s = void 0, o = r.length - 1, a; o >= 0; o--)
-    (a = r[o]) && (s = a(e, t, s) || s);
-  return s && rt(e, t, s), s;
+var We = Object.defineProperty, $ = (r, e, t, i) => {
+  for (var a = void 0, s = r.length - 1, o; s >= 0; s--)
+    (o = r[s]) && (a = o(e, t, a) || a);
+  return a && We(e, t, a), a;
 };
-class k extends j {
+class b extends S {
   constructor() {
     super(...arguments), this.alarms = [], this.haForm = !1, this._users = [], this._policies = {}, this._orphans = {}, this._error = null, this._loaded = !1, this._saveTimers = {};
   }
@@ -661,22 +661,22 @@ class k extends j {
             </div>
           </div>
         </div>
-        ${e.is_admin ? l : n`
+        ${e.is_admin ? d : n`
               <div class="form">
                 ${this.haForm ? n`<ha-form
                       .hass=${this.hass}
                       .data=${{ allowed_media_players: t }}
                       .schema=${this._policySchema()}
                       .computeLabel=${() => "Allowed speakers"}
-                      @value-changed=${(s) => this._policyChanged(e, s)}
+                      @value-changed=${(a) => this._policyChanged(e, a)}
                     ></ha-form>` : n`<label>
                       Allowed speakers (comma separated)
                       <input
                         .value=${t.join(", ")}
-                        @change=${(s) => this._policyChanged(e, {
+                        @change=${(a) => this._policyChanged(e, {
       detail: {
         value: {
-          allowed_media_players: s.target.value.split(",").map((o) => o.trim()).filter(Boolean)
+          allowed_media_players: a.target.value.split(",").map((s) => s.trim()).filter(Boolean)
         }
       }
     })}
@@ -686,9 +686,9 @@ class k extends j {
               ${i.length ? n`<div class="warn">
                     ${i.length} of ${e.name}'s alarms use a speaker they can
                     no longer choose:
-                    ${i.map((s) => `${s.name} (${s.media_player})`).join(", ")}.
+                    ${i.map((a) => `${a.name} (${a.media_player})`).join(", ")}.
                     They will still go off — reassign or delete them.
-                  </div>` : l}
+                  </div>` : d}
             `}
       </div>
     `;
@@ -724,7 +724,7 @@ class k extends j {
               only administrators can see ${this._unowned.length === 1 ? "it" : "them"}.
             </div>
             <button class="primary" @click=${this._claimAll}>Assign all to me</button>
-          </div>` : l}
+          </div>` : d}
       ${this.alarms.map(
       (e) => n`
           <div class="card">
@@ -748,11 +748,11 @@ class k extends j {
           </div>
         `
     )}
-    ` : l;
+    ` : d;
   }
   render() {
     return this._loaded ? n`
-      ${this._error ? n`<div class="error">${this._error}</div>` : l}
+      ${this._error ? n`<div class="error">${this._error}</div>` : d}
       <h2>Speakers each person may use</h2>
       <p class="sub intro">
         Nobody gets a speaker until you grant it. Administrators always have all of
@@ -763,7 +763,7 @@ class k extends j {
     ` : n`<div class="empty">Loading…</div>`;
   }
   static {
-    this.styles = oe`
+    this.styles = Z`
     :host {
       display: block;
     }
@@ -863,91 +863,100 @@ class k extends j {
   `;
   }
 }
-C([
-  O({ attribute: !1 })
-], k.prototype, "hass");
-C([
-  O({ attribute: !1 })
-], k.prototype, "alarms");
-C([
-  O({ attribute: !1 })
-], k.prototype, "haForm");
-C([
-  f()
-], k.prototype, "_users");
-C([
-  f()
-], k.prototype, "_policies");
-C([
-  f()
-], k.prototype, "_orphans");
-C([
-  f()
-], k.prototype, "_error");
-C([
-  f()
-], k.prototype, "_loaded");
-customElements.get("wakey-admin") || customElements.define("wakey-admin", k);
-var ot = Object.defineProperty, ee = (r, e, t, i) => {
-  for (var s = void 0, o = r.length - 1, a; o >= 0; o--)
-    (a = r[o]) && (s = a(e, t, s) || s);
-  return s && ot(e, t, s), s;
+$([
+  w({ attribute: !1 })
+], b.prototype, "hass");
+$([
+  w({ attribute: !1 })
+], b.prototype, "alarms");
+$([
+  w({ attribute: !1 })
+], b.prototype, "haForm");
+$([
+  m()
+], b.prototype, "_users");
+$([
+  m()
+], b.prototype, "_policies");
+$([
+  m()
+], b.prototype, "_orphans");
+$([
+  m()
+], b.prototype, "_error");
+$([
+  m()
+], b.prototype, "_loaded");
+customElements.get("wakey-admin") || customElements.define("wakey-admin", b);
+var Ge = Object.defineProperty, W = (r, e, t, i) => {
+  for (var a = void 0, s = r.length - 1, o; s >= 0; s--)
+    (o = r[s]) && (a = o(e, t, a) || a);
+  return a && Ge(e, t, a), a;
 };
-const G = {
-  style: "flip",
+const q = {
+  style: "official",
   font: "Google Sans",
   weight: "400",
   is24h: !0,
-  showSeconds: !1,
-  showDate: !0,
+  showSpeaker: !0,
+  showIcon: !0,
   glow: !1,
   scale: 100,
-  clockColor: "#f5f5f7",
-  cardColor: "#232328",
-  bgColor: "#0d0d11"
-}, $e = "wakey_clock_config";
-class W extends j {
+  timeColor: "#f7f6f2",
+  cardBgColor: "#282a2d",
+  badgeBgColor: "#c3e8cd",
+  badgeTextColor: "#137333",
+  textColor: "#e8eaed",
+  subColor: "#dadce0",
+  pageBgColor: "#1e1f22"
+}, J = "wakey_alarm_appearance";
+function qe() {
+  try {
+    const r = localStorage.getItem(J);
+    if (r)
+      return { ...q, ...JSON.parse(r) };
+  } catch {
+  }
+  return { ...q };
+}
+class D extends S {
   constructor() {
-    super(...arguments), this._config = { ...G }, this._now = /* @__PURE__ */ new Date(), this._fullscreen = !1;
+    super(...arguments), this.alarms = [], this._config = qe(), this._previewMode = "single";
   }
   connectedCallback() {
-    super.connectedCallback(), this._loadConfig(), this._loadGoogleFonts(), this._timer = window.setInterval(() => {
-      this._now = /* @__PURE__ */ new Date();
-    }, 1e3);
+    super.connectedCallback(), this._loadGoogleFonts();
   }
-  disconnectedCallback() {
-    super.disconnectedCallback(), this._timer && (clearInterval(this._timer), this._timer = void 0);
-  }
-  _loadConfig() {
-    try {
-      const e = localStorage.getItem($e);
-      e && (this._config = { ...G, ...JSON.parse(e) });
-    } catch {
-      this._config = { ...G };
+  _loadGoogleFonts() {
+    if (!document.getElementById("wakey-google-alarm-fonts")) {
+      const e = document.createElement("link");
+      e.id = "wakey-google-alarm-fonts", e.rel = "stylesheet", e.href = "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=Nunito:wght@300;400;500;700&family=Oswald:wght@300;400;500;700&family=Roboto+Slab:wght@300;400;500;700&family=Rubik:wght@300;400;500;700&display=swap", document.head.appendChild(e);
     }
   }
-  _saveConfig() {
+  _updateConfig(e) {
+    this._config = { ...this._config, ...e };
     try {
-      localStorage.setItem($e, JSON.stringify(this._config)), window.dispatchEvent(
-        new CustomEvent("wakey-clock-settings-changed", {
+      localStorage.setItem(J, JSON.stringify(this._config)), window.dispatchEvent(
+        new CustomEvent("wakey-appearance-changed", {
+          detail: { config: this._config }
+        })
+      );
+    } catch (t) {
+      console.error("Failed to save appearance config", t);
+    }
+    this.requestUpdate();
+  }
+  _resetDefaults() {
+    this._config = { ...q };
+    try {
+      localStorage.setItem(J, JSON.stringify(this._config)), window.dispatchEvent(
+        new CustomEvent("wakey-appearance-changed", {
           detail: { config: this._config }
         })
       );
     } catch (e) {
-      console.error("Failed to save Wakey clock config", e);
+      console.error("Failed to reset appearance config", e);
     }
-  }
-  _updateConfig(e) {
-    this._config = { ...this._config, ...e }, this._saveConfig(), this.requestUpdate();
-  }
-  _loadGoogleFonts() {
-    if (!document.getElementById("wakey-google-clock-fonts")) {
-      const e = document.createElement("link");
-      e.id = "wakey-google-clock-fonts", e.rel = "stylesheet", e.href = "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&family=Nunito:wght@300;400;500;700;900&family=Oswald:wght@300;400;500;700&family=Roboto+Slab:wght@300;400;500;700;900&family=Rubik:wght@300;400;500;700;900&display=swap", document.head.appendChild(e);
-    }
-  }
-  _resetDefaults() {
-    this._config = { ...G }, this._saveConfig();
+    this.requestUpdate();
   }
   _getFontFamily(e) {
     const t = {
@@ -961,795 +970,760 @@ class W extends j {
     };
     return t[e] || t["Google Sans"];
   }
-  _hexToRgb(e) {
-    const t = e.replace("#", "");
-    if (t.length === 3) {
-      const i = parseInt(t[0] + t[0], 16), s = parseInt(t[1] + t[1], 16), o = parseInt(t[2] + t[2], 16);
-      return `${i}, ${s}, ${o}`;
-    }
-    if (t.length === 6) {
-      const i = parseInt(t.slice(0, 2), 16), s = parseInt(t.slice(2, 4), 16), o = parseInt(t.slice(4, 6), 16);
-      return `${i}, ${s}, ${o}`;
-    }
-    return "245, 245, 247";
-  }
-  // --- Clock Renderer ----------------------------------------------------
-  _renderClockView(e = !1) {
+  // --- Render Previews ---------------------------------------------------
+  /**
+   * Renders the single alarm card matching assets/alarm.png
+   */
+  _renderSingleAlarmCard() {
     const {
-      style: t,
-      font: i,
-      weight: s,
-      is24h: o,
-      showSeconds: a,
-      showDate: c,
-      glow: d,
-      scale: u,
-      clockColor: g,
-      cardColor: p
-    } = this._config, m = this._getFontFamily(i), h = this._hexToRgb(g), b = this._hexToRgb(p);
-    let y = this._now.getHours(), x = "";
-    o || (x = y >= 12 ? "PM" : "AM", y = y % 12, y === 0 && (y = 12));
-    const S = o ? String(y).padStart(2, "0") : String(y), E = String(this._now.getMinutes()).padStart(2, "0"), T = String(this._now.getSeconds()).padStart(2, "0"), $ = this._now.toLocaleDateString(void 0, {
-      weekday: "long",
-      month: "long",
-      day: "numeric"
-    }), M = d ? `text-shadow: 0 0 12px rgba(${h}, 0.85), 0 0 30px rgba(${h}, 0.45);` : "", w = Math.max(0.6, Math.min(2.5, u / 100));
-    if (e) {
-      const Ee = `calc(min(18vw, 26vh) * ${w})`, Te = `calc(min(4.2vw, 6vh) * ${w})`, ze = `calc(min(22vw, 30vh) * ${w})`, Pe = `calc(min(2vw, 2.5vh) * ${w}) calc(min(3vw, 3.5vh) * ${w})`;
-      return this._renderStyleHTML(
-        t,
-        m,
-        s,
-        g,
-        h,
-        p,
-        b,
-        S,
-        E,
-        T,
-        x,
-        $,
-        Ee,
-        Te,
-        ze,
-        Pe,
-        a,
-        c,
-        o,
-        M,
-        !0
-      );
-    }
-    const q = `${Math.round(44 * w)}px`, te = `${Math.round(13 * w)}px`, Se = `${Math.round(52 * w)}px`;
-    return this._renderStyleHTML(
-      t,
-      m,
-      s,
-      g,
-      h,
-      p,
-      b,
-      S,
-      E,
-      T,
-      x,
-      $,
-      q,
-      te,
-      Se,
-      "8px 12px",
-      a,
-      c,
-      o,
-      M,
-      !1
-    );
-  }
-  _renderStyleHTML(e, t, i, s, o, a, c, d, u, g, p, m, h, b, y, x, S, E, T, $, M) {
-    if (e === "flip")
-      return n`
-        <div
-          class="clock-container"
-          style="font-family:${t}; font-variant-numeric:tabular-nums; line-height:1;"
-        >
-          <div class="flip-row">
-            <div
-              class="flip-card"
-              style="background:${a}; min-width:${y}; padding:${x};"
-            >
-              <span
-                style="color:${s}; font-weight:${i}; font-size:${h}; ${$}"
-                >${d}</span
-              >
-              <div class="flip-divider"></div>
-            </div>
-
-            <div
-              class="colon"
-              style="color:${s}; font-size:${h}; font-weight:${i};"
-            >
-              :
-            </div>
-
-            <div
-              class="flip-card"
-              style="background:${a}; min-width:${y}; padding:${x};"
-            >
-              <span
-                style="color:${s}; font-weight:${i}; font-size:${h}; ${$}"
-                >${u}</span
-              >
-              <div class="flip-divider"></div>
-            </div>
-
-            ${S ? n`
-                  <div
-                    class="colon"
-                    style="color:${s}; font-size:${h}; font-weight:${i};"
-                  >
-                    :
-                  </div>
-                  <div
-                    class="flip-card"
-                    style="background:${a}; min-width:${y}; padding:${x};"
-                  >
-                    <span
-                      style="color:${s}; font-weight:${i}; font-size:${h}; ${$}"
-                      >${g}</span
-                    >
-                    <div class="flip-divider"></div>
-                  </div>
-                ` : l}
-            ${T ? l : n`<div
-                  class="ampm-badge"
-                  style="color:${s}; font-size:${M ? "calc(min(3vw, 4vh))" : "11px"};"
-                >
-                  ${p}
-                </div>`}
-          </div>
-          ${E ? n`<div
-                class="clock-date"
-                style="color:rgba(${o}, 0.75); font-size:${b};"
-              >
-                ${m}
-              </div>` : l}
-        </div>
-      `;
-    if (e === "roller")
-      return n`
-        <div
-          class="clock-container"
-          style="font-family:${t}; font-variant-numeric:tabular-nums; line-height:1;"
-        >
-          <div class="roller-row">
-            <div
-              class="roller-card"
-              style="background:linear-gradient(180deg, rgba(0,0,0,0.55) 0%, ${a} 30%, ${a} 70%, rgba(0,0,0,0.6) 100%); min-width:${y}; padding:${x};"
-            >
-              <span
-                style="color:${s}; font-weight:${i}; font-size:${h}; ${$}"
-                >${d}</span
-              >
-            </div>
-
-            <div
-              class="colon"
-              style="color:${s}; font-size:${h}; font-weight:${i};"
-            >
-              :
-            </div>
-
-            <div
-              class="roller-card"
-              style="background:linear-gradient(180deg, rgba(0,0,0,0.55) 0%, ${a} 30%, ${a} 70%, rgba(0,0,0,0.6) 100%); min-width:${y}; padding:${x};"
-            >
-              <span
-                style="color:${s}; font-weight:${i}; font-size:${h}; ${$}"
-                >${u}</span
-              >
-            </div>
-
-            ${S ? n`
-                  <div
-                    class="colon"
-                    style="color:${s}; font-size:${h}; font-weight:${i};"
-                  >
-                    :
-                  </div>
-                  <div
-                    class="roller-card"
-                    style="background:linear-gradient(180deg, rgba(0,0,0,0.55) 0%, ${a} 30%, ${a} 70%, rgba(0,0,0,0.6) 100%); min-width:${y}; padding:${x};"
-                  >
-                    <span
-                      style="color:${s}; font-weight:${i}; font-size:${h}; ${$}"
-                      >${g}</span
-                    >
-                  </div>
-                ` : l}
-            ${T ? l : n`<div
-                  class="ampm-badge"
-                  style="color:${s}; font-size:${M ? "calc(min(3vw, 4vh))" : "11px"};"
-                >
-                  ${p}
-                </div>`}
-          </div>
-          ${E ? n`<div
-                class="clock-date"
-                style="color:rgba(${o}, 0.75); font-size:${b};"
-              >
-                ${m}
-              </div>` : l}
-        </div>
-      `;
-    if (e === "lcd") {
-      const q = `${d}:${u}${S ? `:${g}` : ""}${T ? "" : ` ${p}`}`, te = q.replace(/[0-9]/g, "8").replace(/[A-Za-z]/g, "8");
-      return n`
-        <div
-          class="clock-container"
-          style="font-family:'Courier New', monospace; line-height:1;"
-        >
-          <div
-            class="lcd-bezel"
-            style="background:${a}; padding:${M ? "calc(min(3vw, 4vh)) calc(min(4.5vw, 6vh))" : "14px 20px"};"
-          >
-            <div
-              class="lcd-ghost"
-              style="color:rgba(${o}, 0.08); font-size:${h}; font-weight:${i};"
-            >
-              ${te}
-            </div>
-            <div
-              class="lcd-active"
-              style="color:${s}; font-size:${h}; font-weight:${i}; ${$}"
-            >
-              ${q}
-            </div>
-          </div>
-          ${E ? n`<div
-                class="clock-date"
-                style="font-family:${t}; color:rgba(${o}, 0.75); font-size:${b};"
-              >
-                ${m}
-              </div>` : l}
-        </div>
-      `;
-    }
-    const w = `${d}:${u}${S ? `:${g}` : ""}`;
+      font: e,
+      weight: t,
+      showSpeaker: i,
+      showIcon: a,
+      glow: s,
+      scale: o,
+      timeColor: c,
+      cardBgColor: l,
+      badgeBgColor: h,
+      badgeTextColor: u,
+      textColor: p,
+      subColor: v
+    } = this._config, _ = this._getFontFamily(e), U = `calc(4.5rem * ${Math.max(0.7, Math.min(1.4, o / 100))})`, _e = s ? "text-shadow: 0 0 15px rgba(255, 255, 255, 0.45);" : "";
     return n`
       <div
-        class="clock-container"
-        style="font-family:${t}; font-variant-numeric:tabular-nums; line-height:1;"
+        class="alarm-card-official single-preview"
+        style="
+          background-color: ${l};
+          font-family: ${_};
+        "
       >
-        <div
-          class="digital-time"
-          style="color:${s}; font-weight:${i}; font-size:${h}; ${$}"
-        >
-          ${w}${T ? l : n`<span class="digital-ampm">${p}</span>`}
-        </div>
-        ${E ? n`<div
-              class="clock-date"
-              style="color:rgba(${o}, 0.75); font-size:${b};"
+        <!-- Header -->
+        <div class="alarm-header-row">
+          <div class="alarm-title-group">
+            ${a ? n`
+                  <div class="alarm-circle-icon">
+                    <ha-icon icon="mdi:alarm"></ha-icon>
+                  </div>
+                ` : d}
+            <span class="alarm-name" style="color: ${p};"
+              >Despertador</span
             >
-              ${m}
-            </div>` : l}
+          </div>
+          <span
+            class="alarm-pill-badge"
+            style="
+              background-color: ${h};
+              color: ${u};
+            "
+          >
+            PROGRAMADA
+          </span>
+        </div>
+
+        <!-- Time -->
+        <div
+          class="alarm-time-large"
+          style="
+            color: ${c};
+            font-weight: ${t};
+            font-size: ${U};
+            ${_e}
+          "
+        >
+          07:30
+        </div>
+
+        <!-- Days -->
+        <div class="alarm-days-label" style="color: ${p};">
+          Lunes a Viernes
+        </div>
+
+        <!-- Speaker -->
+        ${i ? n`
+              <div class="alarm-speaker-row" style="color: ${v};">
+                <ha-icon icon="mdi:volume-high"></ha-icon>
+                <span>Altavoz: Salón</span>
+              </div>
+            ` : d}
       </div>
     `;
   }
-  // --- Main Render -------------------------------------------------------
-  render() {
-    const e = this._config.style === "flip" || this._config.style === "roller" || this._config.style === "lcd";
+  /**
+   * Renders the alarm list matching assets/alarm_list.png
+   */
+  _renderListAlarmCard() {
+    const {
+      font: e,
+      weight: t,
+      showIcon: i,
+      glow: a,
+      scale: s,
+      timeColor: o,
+      cardBgColor: c,
+      badgeBgColor: l,
+      badgeTextColor: h,
+      textColor: u,
+      subColor: p
+    } = this._config, v = this._getFontFamily(e), y = `calc(2.5rem * ${Math.max(0.7, Math.min(1.4, s / 100))})`, U = a ? "text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);" : "";
     return n`
-      <div class="settings-wrapper">
-        <!-- Live Preview Header Card -->
-        <div class="preview-card">
-          <div class="preview-header-bar">
-            <div class="preview-title">
-              <ha-icon icon="mdi:clock-outline"></ha-icon>
-              <span>Vista Previa en Vivo</span>
-              <span class="live-tag">TICTAC ACTIVO</span>
-            </div>
-            <button
-              class="fullscreen-btn"
-              @click=${() => this._fullscreen = !0}
-              title="Ver reloj a pantalla completa"
+      <div
+        class="alarm-card-official list-preview"
+        style="
+          background-color: ${c};
+          font-family: ${v};
+        "
+      >
+        <!-- Header -->
+        <div class="alarm-header-row list-header">
+          <div class="alarm-title-group">
+            ${i ? n`
+                  <div class="alarm-circle-icon">
+                    <ha-icon icon="mdi:alarm"></ha-icon>
+                  </div>
+                ` : d}
+            <span class="alarm-name" style="color: ${u};"
+              >Tus Alarmas</span
             >
-              <ha-icon icon="mdi:fullscreen"></ha-icon>
-              <span>Pantalla completa</span>
-            </button>
+          </div>
+          <span class="alarm-pill-badge counter-badge"> 2 activas </span>
+        </div>
+
+        <!-- Row 1 -->
+        <div class="alarm-list-row">
+          <div
+            class="list-time"
+            style="
+              color: ${o};
+              font-weight: ${t};
+              font-size: ${y};
+              ${U}
+            "
+          >
+            07:00
+          </div>
+          <div class="list-details" style="color: ${u};">
+            Despertador • Lun-Vie
+          </div>
+          <span
+            class="alarm-pill-badge active-tag"
+            style="
+              background-color: ${l};
+              color: ${h};
+            "
+          >
+            ACTIVA
+          </span>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="alarm-list-row">
+          <div
+            class="list-time"
+            style="
+              color: ${o};
+              font-weight: ${t};
+              font-size: ${y};
+              ${U}
+            "
+          >
+            08:30
+          </div>
+          <div class="list-details" style="color: ${u};">
+            Gimnasio • Sáb, Dom
+          </div>
+          <span
+            class="alarm-pill-badge active-tag"
+            style="
+              background-color: ${l};
+              color: ${h};
+            "
+          >
+            ACTIVA
+          </span>
+        </div>
+      </div>
+    `;
+  }
+  /**
+   * Renders the ringing alarm view
+   */
+  _renderRingingAlarmCard() {
+    const { font: e, weight: t, cardBgColor: i, timeColor: a, textColor: s, subColor: o } = this._config, c = this._getFontFamily(e);
+    return n`
+      <div
+        class="alarm-card-official single-preview ringing-preview"
+        style="
+          background-color: ${i};
+          font-family: ${c};
+          border: 2px solid #db4437;
+        "
+      >
+        <div class="alarm-header-row">
+          <div class="alarm-title-group">
+            <div class="alarm-circle-icon ringing-pulse">
+              <ha-icon icon="mdi:bell-ring"></ha-icon>
+            </div>
+            <span class="alarm-name" style="color: ${s};"
+              >Alarma matutina</span
+            >
+          </div>
+          <span class="alarm-pill-badge ringing-badge"> SONANDO AHORA </span>
+        </div>
+
+        <div
+          class="alarm-time-large"
+          style="color: ${a}; font-weight: ${t}; font-size: 4.5rem;"
+        >
+          07:30
+        </div>
+
+        <div class="alarm-days-label" style="color: ${s};">
+          Lunes a Viernes
+        </div>
+
+        <div class="alarm-speaker-row" style="color: ${o};">
+          <ha-icon icon="mdi:volume-high"></ha-icon>
+          <span>Altavoz: Salón</span>
+        </div>
+
+        <div class="ringing-actions-bar">
+          <button class="ring-btn snooze">
+            <ha-icon icon="mdi:snooze"></ha-icon> Posponer 9 min
+          </button>
+          <button class="ring-btn dismiss">
+            <ha-icon icon="mdi:alarm-off"></ha-icon> Apagar
+          </button>
+        </div>
+      </div>
+    `;
+  }
+  render() {
+    return n`
+      <div class="appearance-wrapper">
+        <!-- Live Preview Showcase -->
+        <div class="showcase-card">
+          <div class="showcase-header">
+            <div class="showcase-title">
+              <ha-icon icon="mdi:palette-outline"></ha-icon>
+              <span>Vista Previa del Diseño de Alarmas</span>
+            </div>
+
+            <!-- View Switcher -->
+            <div class="view-switcher">
+              <button
+                class=${this._previewMode === "single" ? "active" : ""}
+                @click=${() => this._previewMode = "single"}
+              >
+                <ha-icon icon="mdi:card-bulleted"></ha-icon>
+                <span>Individual (Oficial)</span>
+              </button>
+              <button
+                class=${this._previewMode === "list" ? "active" : ""}
+                @click=${() => this._previewMode = "list"}
+              >
+                <ha-icon icon="mdi:format-list-bulleted"></ha-icon>
+                <span>Lista</span>
+              </button>
+              <button
+                class=${this._previewMode === "ringing" ? "active" : ""}
+                @click=${() => this._previewMode = "ringing"}
+              >
+                <ha-icon icon="mdi:bell-ring"></ha-icon>
+                <span>Sonando</span>
+              </button>
+            </div>
           </div>
 
+          <!-- Preview Stage with Canvas -->
           <div
-            class="preview-viewport"
-            style="background-color: ${this._config.bgColor};"
+            class="preview-stage"
+            style="background-color: ${this._config.pageBgColor};"
           >
-            ${this._renderClockView(!1)}
+            ${this._previewMode === "single" ? this._renderSingleAlarmCard() : this._previewMode === "list" ? this._renderListAlarmCard() : this._renderRingingAlarmCard()}
           </div>
         </div>
 
-        <!-- Controls Container -->
-        <div class="options-container">
-          <!-- Style Selector -->
-          <div class="section-card">
-            <h3>Estilo del Reloj</h3>
-            <div class="style-grid">
-              <div
-                class="style-option ${this._config.style === "digital" ? "selected" : ""}"
-                @click=${() => this._updateConfig({ style: "digital" })}
-              >
-                <div class="style-icon"><ha-icon icon="mdi:numeric"></ha-icon></div>
-                <div class="style-name">Digital</div>
-                <div class="style-desc">Moderno y minimalista</div>
-              </div>
+        <!-- Controls Section -->
+        <div class="controls-grid">
+          <!-- Typography & Scale -->
+          <div class="settings-card">
+            <h3>Tipografía y Estilo de Hora</h3>
 
-              <div
-                class="style-option ${this._config.style === "flip" ? "selected" : ""}"
-                @click=${() => this._updateConfig({ style: "flip" })}
-              >
-                <div class="style-icon"><ha-icon icon="mdi:flip-to-back"></ha-icon></div>
-                <div class="style-name">Flip Clock</div>
-                <div class="style-desc">Solapas mecánicas retro</div>
-              </div>
-
-              <div
-                class="style-option ${this._config.style === "roller" ? "selected" : ""}"
-                @click=${() => this._updateConfig({ style: "roller" })}
-              >
-                <div class="style-icon"><ha-icon icon="mdi:cylinder"></ha-icon></div>
-                <div class="style-name">Roller Clock</div>
-                <div class="style-desc">Cilíndrico 3D con relieve</div>
-              </div>
-
-              <div
-                class="style-option ${this._config.style === "lcd" ? "selected" : ""}"
-                @click=${() => this._updateConfig({ style: "lcd" })}
-              >
-                <div class="style-icon"><ha-icon icon="mdi:watch"></ha-icon></div>
-                <div class="style-name">LCD Clock</div>
-                <div class="style-desc">7 segmentos vintage</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Typography -->
-          <div class="section-card">
-            <h3>Tipografía y Fuente</h3>
-            <div class="form-row">
+            <div class="control-row">
               <label for="font-select">Familia tipográfica</label>
               <select
                 id="font-select"
                 .value=${this._config.font}
-                @change=${(t) => this._updateConfig({ font: t.target.value })}
+                @change=${(e) => this._updateConfig({ font: e.target.value })}
               >
-                <option value="Google Sans">Google Sans</option>
-                <option value="Rubik">Rubik</option>
-                <option value="Nunito">Nunito (Apple StandBy)</option>
-                <option value="Inter">Inter</option>
-                <option value="Oswald">Oswald (Reloj de pared)</option>
-                <option value="Roboto Slab">Roboto Slab</option>
-                <option value="monospace">Monospace</option>
+                <option value="Google Sans">Google Sans (Oficial Google)</option>
+                <option value="Inter">Inter (Moderna y Limpia)</option>
+                <option value="Rubik">Rubik (Geométrica Suave)</option>
+                <option value="Nunito">Nunito (Estilo iOS / StandBy)</option>
+                <option value="Oswald">Oswald (Números Grandes Display)</option>
+                <option value="Roboto Slab">Roboto Slab (Con serifa)</option>
+                <option value="monospace">Monospace (Dígitos Retro)</option>
               </select>
             </div>
 
-            <div class="form-row">
-              <label for="weight-select">Grosor de dígitos (Weight)</label>
+            <div class="control-row">
+              <label for="weight-select">Grosor de la hora</label>
               <select
                 id="weight-select"
                 .value=${this._config.weight}
-                @change=${(t) => this._updateConfig({ weight: t.target.value })}
+                @change=${(e) => this._updateConfig({ weight: e.target.value })}
               >
-                <option value="300">300 (Ligero / Fino)</option>
+                <option value="300">300 (Fino / Light)</option>
                 <option value="400">400 (Regular / Normal)</option>
                 <option value="500">500 (Medio)</option>
                 <option value="700">700 (Negrita / Bold)</option>
-                <option value="900">900 (Extra Bold / Black)</option>
               </select>
+            </div>
+
+            <div class="control-row slider-container">
+              <div class="slider-title-row">
+                <label>Tamaño / Escala de la tarjeta</label>
+                <span class="slider-val">${this._config.scale}%</span>
+              </div>
+              <input
+                type="range"
+                min="75"
+                max="135"
+                step="5"
+                .value=${String(this._config.scale)}
+                @input=${(e) => this._updateConfig({ scale: Number(e.target.value) })}
+              />
             </div>
           </div>
 
-          <!-- Formats & Toggles -->
-          <div class="section-card">
-            <h3>Opciones de Visualización</h3>
+          <!-- Color Customizer -->
+          <div class="settings-card">
+            <h3>Colores y Temas</h3>
 
-            <div class="toggle-row">
-              <div class="toggle-info">
-                <div class="toggle-title">Formato 24 horas</div>
-                <div class="toggle-sub">Alterna entre 24h y 12h con indicador AM/PM</div>
+            <div class="color-picker-item">
+              <div class="color-text">
+                <div class="color-name">Fondo de la tarjeta</div>
+                <div class="color-desc">Color principal del recuadro (#282a2d)</div>
               </div>
               <input
-                type="checkbox"
-                .checked=${this._config.is24h}
-                @change=${(t) => this._updateConfig({ is24h: t.target.checked })}
+                type="color"
+                .value=${this._config.cardBgColor}
+                @input=${(e) => this._updateConfig({ cardBgColor: e.target.value })}
               />
             </div>
 
-            <div class="toggle-row">
-              <div class="toggle-info">
-                <div class="toggle-title">Mostrar segundos</div>
-                <div class="toggle-sub">Incluye la unidad de segundos en el reloj</div>
+            <div class="color-picker-item">
+              <div class="color-text">
+                <div class="color-name">Dígitos de la hora</div>
+                <div class="color-desc">Color numérico destacado (#f7f6f2)</div>
               </div>
               <input
-                type="checkbox"
-                .checked=${this._config.showSeconds}
-                @change=${(t) => this._updateConfig({ showSeconds: t.target.checked })}
+                type="color"
+                .value=${this._config.timeColor}
+                @input=${(e) => this._updateConfig({ timeColor: e.target.value })}
               />
             </div>
 
-            <div class="toggle-row">
-              <div class="toggle-info">
-                <div class="toggle-title">Mostrar fecha</div>
-                <div class="toggle-sub">Línea de día de la semana y fecha completa</div>
+            <div class="color-picker-item">
+              <div class="color-text">
+                <div class="color-name">Fondo de etiqueta "PROGRAMADA"</div>
+                <div class="color-desc">Color de la pastilla (#c3e8cd)</div>
               </div>
               <input
-                type="checkbox"
-                .checked=${this._config.showDate}
-                @change=${(t) => this._updateConfig({ showDate: t.target.checked })}
+                type="color"
+                .value=${this._config.badgeBgColor}
+                @input=${(e) => this._updateConfig({ badgeBgColor: e.target.value })}
               />
             </div>
 
-            <div class="toggle-row">
-              <div class="toggle-info">
-                <div class="toggle-title">Resplandor neón (Glow)</div>
-                <div class="toggle-sub">
-                  Añade un halo luminoso y sombras difusas a los dígitos
-                </div>
+            <div class="color-picker-item">
+              <div class="color-text">
+                <div class="color-name">Texto de etiqueta "PROGRAMADA"</div>
+                <div class="color-desc">Color de la letra interior (#137333)</div>
+              </div>
+              <input
+                type="color"
+                .value=${this._config.badgeTextColor}
+                @input=${(e) => this._updateConfig({ badgeTextColor: e.target.value })}
+              />
+            </div>
+
+            <div class="color-picker-item">
+              <div class="color-text">
+                <div class="color-name">Fondo de página</div>
+                <div class="color-desc">Fondo exterior de la interfaz (#1e1f22)</div>
+              </div>
+              <input
+                type="color"
+                .value=${this._config.pageBgColor}
+                @input=${(e) => this._updateConfig({ pageBgColor: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <!-- Elements & Toggles -->
+          <div class="settings-card">
+            <h3>Elementos Visibles</h3>
+
+            <div class="toggle-item">
+              <div class="toggle-text">
+                <div class="toggle-name">Icono circular de alarma</div>
+                <div class="toggle-desc">Muestra el icono redondeado en la cabecera</div>
+              </div>
+              <input
+                type="checkbox"
+                .checked=${this._config.showIcon}
+                @change=${(e) => this._updateConfig({ showIcon: e.target.checked })}
+              />
+            </div>
+
+            <div class="toggle-item">
+              <div class="toggle-text">
+                <div class="toggle-name">Altavoz asignado</div>
+                <div class="toggle-desc">Muestra el altavoz o reproductor de destino</div>
+              </div>
+              <input
+                type="checkbox"
+                .checked=${this._config.showSpeaker}
+                @change=${(e) => this._updateConfig({ showSpeaker: e.target.checked })}
+              />
+            </div>
+
+            <div class="toggle-item">
+              <div class="toggle-text">
+                <div class="toggle-name">Resplandor suave (Glow)</div>
+                <div class="toggle-desc">Ligera aura luminosa en la hora</div>
               </div>
               <input
                 type="checkbox"
                 .checked=${this._config.glow}
-                @change=${(t) => this._updateConfig({ glow: t.target.checked })}
+                @change=${(e) => this._updateConfig({ glow: e.target.checked })}
               />
             </div>
 
-            <div class="form-row slider-row">
-              <div class="slider-header">
-                <label>Tamaño / Escala del reloj</label>
-                <span class="slider-value">${this._config.scale}%</span>
-              </div>
-              <input
-                type="range"
-                min="50"
-                max="250"
-                step="5"
-                .value=${String(this._config.scale)}
-                @input=${(t) => this._updateConfig({ scale: Number(t.target.value) })}
-              />
-            </div>
-          </div>
-
-          <!-- Color Customization -->
-          <div class="section-card">
-            <h3>Paleta de Colores</h3>
-
-            <div class="color-row">
-              <div class="color-info">
-                <div class="color-label">Color de Dígitos y Texto</div>
-                <div class="color-sub">Color principal de los números y fecha</div>
-              </div>
-              <input
-                type="color"
-                .value=${this._config.clockColor}
-                @input=${(t) => this._updateConfig({ clockColor: t.target.value })}
-              />
-            </div>
-
-            ${e ? n`
-                  <div class="color-row">
-                    <div class="color-info">
-                      <div class="color-label">Color de Tarjetas / Bisel</div>
-                      <div class="color-sub">
-                        Fondo de las fichas en Flip, Roller y marco de LCD
-                      </div>
-                    </div>
-                    <input
-                      type="color"
-                      .value=${this._config.cardColor}
-                      @input=${(t) => this._updateConfig({ cardColor: t.target.value })}
-                    />
-                  </div>
-                ` : l}
-
-            <div class="color-row">
-              <div class="color-info">
-                <div class="color-label">Fondo del Reloj / Salvapantallas</div>
-                <div class="color-sub">Fondo general detrás de los elementos</div>
-              </div>
-              <input
-                type="color"
-                .value=${this._config.bgColor}
-                @input=${(t) => this._updateConfig({ bgColor: t.target.value })}
-              />
-            </div>
-
-            <div class="actions-footer">
-              <button class="reset-btn" @click=${this._resetDefaults}>
+            <div class="footer-buttons">
+              <button class="btn-restore" @click=${this._resetDefaults}>
                 <ha-icon icon="mdi:restore"></ha-icon>
-                Restablecer predeterminados
+                Restablecer diseño oficial (alarm.png)
               </button>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Fullscreen Modal Preview -->
-      ${this._fullscreen ? n`
-            <div
-              class="fs-overlay"
-              style="background-color: ${this._config.bgColor};"
-              @click=${() => this._fullscreen = !1}
-            >
-              <div class="fs-dismiss-hint">Haz clic o toca para salir</div>
-              <div class="fs-clock-wrap">${this._renderClockView(!0)}</div>
-            </div>
-          ` : l}
     `;
   }
   static {
-    this.styles = oe`
+    this.styles = Z`
     :host {
       display: block;
       color: var(--primary-text-color, #212121);
     }
 
-    .settings-wrapper {
+    .appearance-wrapper {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 20px;
     }
 
-    /* Live Preview Card */
-    .preview-card {
+    /* Showcase Card */
+    .showcase-card {
       background: var(--card-background-color, #fff);
-      border-radius: var(--ha-card-border-radius, 14px);
-      box-shadow: var(--ha-card-box-shadow, 0 4px 12px rgba(0, 0, 0, 0.08));
+      border-radius: 18px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
       overflow: hidden;
       border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.08));
     }
 
-    .preview-header-bar {
+    .showcase-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 18px;
-      border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.08));
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 14px 20px;
       background: rgba(0, 0, 0, 0.02);
+      border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.06));
     }
 
-    .preview-title {
+    .showcase-title {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-weight: 500;
       font-size: 15px;
+      font-weight: 600;
     }
 
-    .live-tag {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      padding: 3px 8px;
-      border-radius: 6px;
-      background: rgba(76, 175, 80, 0.15);
-      color: #388e3c;
+    .showcase-title ha-icon {
+      color: var(--primary-color, #03a9f4);
     }
 
-    .fullscreen-btn {
+    .view-switcher {
+      display: flex;
+      background: var(--secondary-background-color, rgba(0, 0, 0, 0.05));
+      border-radius: 10px;
+      padding: 3px;
+      gap: 4px;
+    }
+
+    .view-switcher button {
       display: flex;
       align-items: center;
       gap: 6px;
       font-size: 13px;
-      font-weight: 500;
       padding: 6px 12px;
       border-radius: 8px;
-      border: 1px solid var(--divider-color, #ddd);
+      border: none;
       background: transparent;
-      color: var(--primary-color, #03a9f4);
+      color: var(--secondary-text-color, #666);
       cursor: pointer;
+      font-weight: 500;
       transition: all 180ms ease;
     }
 
-    .fullscreen-btn:hover {
-      background: var(--primary-color, #03a9f4);
-      color: #fff;
-      border-color: transparent;
+    .view-switcher button.active {
+      background: var(--card-background-color, #fff);
+      color: var(--primary-color, #03a9f4);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      font-weight: 600;
     }
 
-    .preview-viewport {
-      position: relative;
-      min-height: 200px;
-      padding: 32px 16px;
+    .preview-stage {
+      padding: 40px 24px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
+      min-height: 380px;
       transition: background-color 250ms ease;
     }
 
-    /* Clock Elements */
-    .clock-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+    /* Official Alarm Card matching assets/alarm.png */
+    .alarm-card-official {
+      border-radius: 28px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      box-sizing: border-box;
       user-select: none;
     }
 
-    .clock-date {
-      font-weight: 400;
-      margin-top: 0.6em;
-      letter-spacing: 0.02em;
+    .alarm-card-official.single-preview {
+      width: 100%;
+      max-width: 520px;
+      padding: 36px 40px 32px 40px;
       text-align: center;
-    }
-
-    /* Flip Clock */
-    .flip-row,
-    .roller-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .flip-card {
-      position: relative;
-      border-radius: 8px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      box-sizing: border-box;
-    }
-
-    .flip-divider {
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 50%;
-      height: 1px;
-      background: rgba(0, 0, 0, 0.7);
-      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
-      pointer-events: none;
-    }
-
-    /* Roller Clock */
-    .roller-card {
-      position: relative;
-      border-radius: 12px;
-      box-shadow: inset 0 6px 8px -3px rgba(0, 0, 0, 0.8),
-        inset 0 -6px 8px -3px rgba(0, 0, 0, 0.8), 0 6px 18px rgba(0, 0, 0, 0.45);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      box-sizing: border-box;
-    }
-
-    .colon {
-      opacity: 0.85;
-      margin: 0 2px;
-    }
-
-    .ampm-badge {
-      align-self: flex-end;
-      margin-bottom: 6px;
-      padding: 3px 6px;
-      border-radius: 4px;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      font-weight: 700;
-    }
-
-    /* LCD Clock */
-    .lcd-bezel {
-      position: relative;
-      border-radius: 10px;
-      box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.85), 0 4px 14px rgba(0, 0, 0, 0.5);
-      border: 2px solid rgba(255, 255, 255, 0.08);
-      letter-spacing: 0.08em;
-    }
-
-    .lcd-ghost {
-      pointer-events: none;
-    }
-
-    .lcd-active {
-      position: absolute;
-      left: 20px;
-      top: 14px;
-    }
-
-    /* Digital Clock */
-    .digital-time {
-      letter-spacing: 0.02em;
-    }
-
-    .digital-ampm {
-      font-size: 0.45em;
-      opacity: 0.8;
-      font-weight: 400;
-      vertical-align: top;
-      margin-left: 6px;
-    }
-
-    /* Options Sections */
-    .options-container {
       display: flex;
       flex-direction: column;
+      align-items: center;
+    }
+
+    .alarm-header-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .alarm-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .alarm-circle-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #e8eaed;
+    }
+
+    .alarm-circle-icon ha-icon {
+      --mdc-icon-size: 24px;
+    }
+
+    .alarm-name {
+      font-size: 22px;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+    }
+
+    .alarm-pill-badge {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 6px 16px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    }
+
+    .alarm-time-large {
+      line-height: 1;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+      margin: 12px 0 16px 0;
+    }
+
+    .alarm-days-label {
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      margin-bottom: 16px;
+    }
+
+    .alarm-speaker-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 19px;
+      font-weight: 400;
+    }
+
+    .alarm-speaker-row ha-icon {
+      --mdc-icon-size: 22px;
+    }
+
+    /* List Card Preview matching assets/alarm_list.png */
+    .alarm-card-official.list-preview {
+      width: 100%;
+      max-width: 540px;
+      padding: 24px 28px;
+    }
+
+    .list-header {
+      padding-bottom: 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 8px;
+    }
+
+    .counter-badge {
+      background: rgba(255, 255, 255, 0.12);
+      color: #e8eaed;
+      text-transform: none;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .alarm-list-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .alarm-list-row:last-child {
+      border-bottom: none;
+      padding-bottom: 8px;
+    }
+
+    .list-time {
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+      min-width: 120px;
+    }
+
+    .list-details {
+      flex: 1;
+      font-size: 18px;
+      font-weight: 400;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .active-tag {
+      font-size: 12px;
+      padding: 5px 14px;
+    }
+
+    /* Ringing Preview Actions */
+    .ringing-actions-bar {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      width: 100%;
+    }
+
+    .ring-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+
+    .ring-btn.snooze {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    .ring-btn.dismiss {
+      background: #db4437;
+      color: #fff;
+    }
+
+    .ringing-pulse {
+      animation: ring-pulse 1.3s infinite ease-in-out;
+      background: rgba(219, 68, 55, 0.25);
+      color: #db4437;
+    }
+
+    .ringing-badge {
+      background: #db4437;
+      color: #fff;
+    }
+
+    @keyframes ring-pulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    /* Controls Grid */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 16px;
     }
 
-    .section-card {
+    .settings-card {
       background: var(--card-background-color, #fff);
-      border-radius: var(--ha-card-border-radius, 14px);
-      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0, 0, 0, 0.06));
+      border-radius: 14px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
       padding: 20px;
       border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.06));
     }
 
-    .section-card h3 {
+    .settings-card h3 {
       margin: 0 0 16px 0;
       font-size: 16px;
-      font-weight: 500;
-    }
-
-    /* Style Grid */
-    .style-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-    }
-
-    .style-option {
-      background: var(--secondary-background-color, rgba(0, 0, 0, 0.03));
-      border: 2px solid transparent;
-      border-radius: 12px;
-      padding: 16px 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 180ms ease;
-    }
-
-    .style-option:hover {
-      background: rgba(3, 169, 244, 0.08);
-    }
-
-    .style-option.selected {
-      border-color: var(--primary-color, #03a9f4);
-      background: rgba(3, 169, 244, 0.12);
-    }
-
-    .style-icon {
-      font-size: 28px;
-      color: var(--primary-color, #03a9f4);
-      margin-bottom: 6px;
-    }
-
-    .style-name {
       font-weight: 600;
-      font-size: 14px;
-      margin-bottom: 4px;
     }
 
-    .style-desc {
-      font-size: 11px;
-      color: var(--secondary-text-color, #727272);
-      line-height: 1.3;
-    }
-
-    /* Form Rows */
-    .form-row {
+    .control-row {
       display: flex;
       flex-direction: column;
       gap: 6px;
       margin-bottom: 16px;
     }
 
-    .form-row:last-child {
-      margin-bottom: 0;
-    }
-
-    .form-row label {
+    .control-row label {
       font-size: 14px;
       font-weight: 500;
     }
@@ -1769,8 +1743,75 @@ class W extends j {
       border-color: var(--primary-color, #03a9f4);
     }
 
-    /* Toggles */
-    .toggle-row {
+    /* Slider */
+    .slider-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .slider-val {
+      font-weight: 600;
+      color: var(--primary-color, #03a9f4);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--primary-color, #03a9f4);
+      cursor: pointer;
+    }
+
+    /* Color Item */
+    .color-picker-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.06));
+    }
+
+    .color-picker-item:last-of-type {
+      border-bottom: none;
+    }
+
+    .color-text {
+      flex: 1;
+    }
+
+    .color-name {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .color-desc {
+      font-size: 12px;
+      color: var(--secondary-text-color, #727272);
+      margin-top: 2px;
+    }
+
+    input[type="color"] {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border: 1px solid var(--divider-color, #ccc);
+      border-radius: 8px;
+      background: none;
+      cursor: pointer;
+    }
+
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 3px;
+    }
+
+    input[type="color"]::-webkit-color-swatch {
+      border: none;
+      border-radius: 6px;
+    }
+
+    /* Toggle Item */
+    .toggle-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -1779,20 +1820,20 @@ class W extends j {
       border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.06));
     }
 
-    .toggle-row:last-of-type {
+    .toggle-item:last-of-type {
       border-bottom: none;
     }
 
-    .toggle-info {
+    .toggle-text {
       flex: 1;
     }
 
-    .toggle-title {
+    .toggle-name {
       font-size: 14px;
       font-weight: 500;
     }
 
-    .toggle-sub {
+    .toggle-desc {
       font-size: 12px;
       color: var(--secondary-text-color, #727272);
       margin-top: 2px;
@@ -1805,85 +1846,14 @@ class W extends j {
       cursor: pointer;
     }
 
-    /* Slider */
-    .slider-row {
-      margin-top: 14px;
-    }
-
-    .slider-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .slider-value {
-      font-weight: 600;
-      color: var(--primary-color, #03a9f4);
-    }
-
-    input[type="range"] {
-      width: 100%;
-      accent-color: var(--primary-color, #03a9f4);
-      cursor: pointer;
-    }
-
-    /* Color Rows */
-    .color-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.06));
-    }
-
-    .color-row:last-of-type {
-      border-bottom: none;
-    }
-
-    .color-info {
-      flex: 1;
-    }
-
-    .color-label {
-      font-size: 14px;
-      font-weight: 500;
-    }
-
-    .color-sub {
-      font-size: 12px;
-      color: var(--secondary-text-color, #727272);
-      margin-top: 2px;
-    }
-
-    input[type="color"] {
-      width: 44px;
-      height: 44px;
-      padding: 0;
-      border: 1px solid var(--divider-color, #ccc);
-      border-radius: 8px;
-      background: none;
-      cursor: pointer;
-    }
-
-    input[type="color"]::-webkit-color-swatch-wrapper {
-      padding: 4px;
-    }
-
-    input[type="color"]::-webkit-color-swatch {
-      border: none;
-      border-radius: 6px;
-    }
-
-    /* Footer */
-    .actions-footer {
-      margin-top: 16px;
+    /* Footer Buttons */
+    .footer-buttons {
+      margin-top: 20px;
       display: flex;
       justify-content: flex-end;
     }
 
-    .reset-btn {
+    .btn-restore {
       display: flex;
       align-items: center;
       gap: 6px;
@@ -1894,70 +1864,36 @@ class W extends j {
       background: transparent;
       color: var(--secondary-text-color, #666);
       cursor: pointer;
+      transition: all 180ms ease;
     }
 
-    .reset-btn:hover {
-      color: var(--error-color, #db4437);
-      border-color: var(--error-color, #db4437);
-    }
-
-    /* Fullscreen Modal */
-    .fs-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .fs-dismiss-hint {
-      position: absolute;
-      top: 24px;
-      padding: 6px 14px;
-      background: rgba(0, 0, 0, 0.4);
-      color: rgba(255, 255, 255, 0.7);
-      border-radius: 20px;
-      font-size: 12px;
-      letter-spacing: 0.03em;
-    }
-
-    .fs-clock-wrap {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .btn-restore:hover {
+      color: var(--primary-color, #03a9f4);
+      border-color: var(--primary-color, #03a9f4);
     }
   `;
   }
 }
-ee([
-  O({ attribute: !1 })
-], W.prototype, "hass");
-ee([
-  f()
-], W.prototype, "_config");
-ee([
-  f()
-], W.prototype, "_now");
-ee([
-  f()
-], W.prototype, "_fullscreen");
-customElements.get("wakey-clock-settings") || customElements.define("wakey-clock-settings", W);
-var at = Object.defineProperty, _ = (r, e, t, i) => {
-  for (var s = void 0, o = r.length - 1, a; o >= 0; o--)
-    (a = r[o]) && (s = a(e, t, s) || s);
-  return s && at(e, t, s), s;
+W([
+  w({ attribute: !1 })
+], D.prototype, "hass");
+W([
+  w({ attribute: !1 })
+], D.prototype, "alarms");
+W([
+  m()
+], D.prototype, "_config");
+W([
+  m()
+], D.prototype, "_previewMode");
+customElements.get("wakey-alarm-settings") || customElements.define("wakey-alarm-settings", D);
+var Je = Object.defineProperty, f = (r, e, t, i) => {
+  for (var a = void 0, s = r.length - 1, o; s >= 0; s--)
+    (o = r[s]) && (a = o(e, t, a) || a);
+  return a && Je(e, t, a), a;
 };
-const nt = K.map((r, e) => ({ value: String(e), label: r }));
-class v extends j {
+const Ke = L.map((r, e) => ({ value: String(e), label: r }));
+class g extends S {
   constructor() {
     super(...arguments), this.narrow = !1, this._alarms = [], this._isAdmin = !1, this._allowedPlayers = null, this._view = "alarms", this._loaded = !1, this._error = null, this._dialogOpen = !1, this._editing = null, this._draft = {}, this._adjusting = null, this._adjustTime = "", this._haForm = !1, this._testingAlarm = null, this._subscribed = !1, this._label = (e) => ({
       name: "Name",
@@ -1984,7 +1920,7 @@ class v extends j {
     super.disconnectedCallback(), this._unsub?.(), this._unsub = void 0, this._subscribed = !1;
   }
   updated(e) {
-    e.has("hass") && this.hass && !this._subscribed && (this._subscribed = !0, this._subscribe(), st().then((t) => this._haForm = t));
+    e.has("hass") && this.hass && !this._subscribed && (this._subscribed = !0, this._subscribe(), Ve().then((t) => this._haForm = t));
   }
   async _subscribe() {
     try {
@@ -2058,7 +1994,7 @@ class v extends j {
   }
   // --- dialog ------------------------------------------------------------
   _openNew() {
-    this._editing = null, this._draft = { ...it(), weekdays: ["0", "1", "2", "3", "4"] }, this._dialogOpen = !0;
+    this._editing = null, this._draft = { ...Ie(), weekdays: ["0", "1", "2", "3", "4"] }, this._dialogOpen = !0;
   }
   _openEdit(e) {
     this._editing = e.id, this._draft = {
@@ -2120,7 +2056,7 @@ class v extends j {
           }
         }
       },
-      ...e === "weekly" ? [{ name: "weekdays", selector: { select: { multiple: !0, options: nt } } }] : [{ name: "date", selector: { date: {} } }],
+      ...e === "weekly" ? [{ name: "weekdays", selector: { select: { multiple: !0, options: Ke } } }] : [{ name: "date", selector: { date: {} } }],
       {
         name: "media_player",
         required: !0,
@@ -2188,8 +2124,8 @@ class v extends j {
     if (!e.next_fire) return "Never";
     const t = new Date(e.next_fire), i = Math.round((t.getTime() - Date.now()) / 6e4);
     if (i < 60) return `in ${Math.max(1, i)} min`;
-    const s = Math.floor(i / 60);
-    return s < 24 ? `in ${s}h ${i % 60}m` : t.toLocaleDateString(void 0, { weekday: "long" });
+    const a = Math.floor(i / 60);
+    return a < 24 ? `in ${a}h ${i % 60}m` : t.toLocaleDateString(void 0, { weekday: "long" });
   }
   _fmtAdjusted(e) {
     const t = (/* @__PURE__ */ new Date()).toLocaleDateString("en-CA");
@@ -2216,15 +2152,15 @@ class v extends j {
         <div class="dialog-actions">
           ${this._adjusted(e) ? n`<button @click=${() => this._clearAdjust(e)}>
                 Back to ${e.time}
-              </button>` : l}
+              </button>` : d}
           <button @click=${() => this._adjusting = null}>Cancel</button>
           <button class="primary" @click=${this._saveAdjust}>Save</button>
         </div>
       </div>
-    ` : l;
+    ` : d;
   }
   _renderAlarm(e) {
-    const t = e.repeat === "once" ? e.date ?? "Once" : e.repeat === "never" ? e.date ? `${e.date} (Never)` : "Never (auto-delete)" : e.weekdays.length === 7 ? "Every day" : e.weekdays.length === 0 ? "No days selected" : e.weekdays.map((i) => K[i]).join(" ");
+    const t = e.repeat === "once" ? e.date ?? "Once" : e.repeat === "never" ? e.date ? `${e.date} (Never)` : "Never (auto-delete)" : e.weekdays.length === 7 ? "Every day" : e.weekdays.length === 0 ? "No days selected" : e.weekdays.map((i) => L[i]).join(" ");
     return n`
       <div class="card ${e.enabled ? "" : "dim"}">
         <div class="row">
@@ -2247,11 +2183,11 @@ class v extends j {
           </div>
         </div>
         ${e.is_ringing || e.is_snoozed || e.skip_next || this._adjusted(e) ? n`<div class="flags">
-              ${e.is_ringing ? n`<span class="flag ring">Ringing</span>` : l}
-              ${e.is_snoozed ? n`<span class="flag">Snoozed</span>` : l}
-              ${e.skip_next ? n`<span class="flag">Skipping next</span>` : l}
-              ${this._adjusted(e) ? n`<span class="flag">${this._fmtAdjusted(e)}</span>` : l}
-            </div>` : l}
+              ${e.is_ringing ? n`<span class="flag ring">Ringing</span>` : d}
+              ${e.is_snoozed ? n`<span class="flag">Snoozed</span>` : d}
+              ${e.skip_next ? n`<span class="flag">Skipping next</span>` : d}
+              ${this._adjusted(e) ? n`<span class="flag">${this._fmtAdjusted(e)}</span>` : d}
+            </div>` : d}
         ${n`<div class="actions">
               <button @click=${() => this._openEdit(e)}>Edit</button>
               <button @click=${() => this._skip(e)}>
@@ -2275,11 +2211,11 @@ class v extends j {
         <button @click=${() => this._call({ type: "wakey/snooze" })}>Snooze</button>
         <button @click=${() => this._call({ type: "wakey/dismiss" })}>Dismiss</button>
       </div>
-    ` : l;
+    ` : d;
   }
   _renderDialog() {
-    if (!this._dialogOpen) return l;
-    const e = this._draft.time ? String(this._draft.time).slice(0, 5) : "07:00", t = this._draft.name || "Alarma", i = this._draft.repeat === "once" ? this._draft.date || "Una vez" : this._draft.repeat === "never" ? this._draft.date ? `${this._draft.date} (Nunca)` : "Nunca (auto-borrado)" : this._draft.weekdays?.length === 7 ? "Todos los días" : this._draft.weekdays?.length ? this._draft.weekdays.map((s) => K[Number(s)]).join(" ") : "L M X J V";
+    if (!this._dialogOpen) return d;
+    const e = this._draft.time ? String(this._draft.time).slice(0, 5) : "07:00", t = this._draft.name || "Alarma", i = this._draft.repeat === "once" ? this._draft.date || "Una vez" : this._draft.repeat === "never" ? this._draft.date ? `${this._draft.date} (Nunca)` : "Nunca (auto-borrado)" : this._draft.weekdays?.length === 7 ? "Todos los días" : this._draft.weekdays?.length ? this._draft.weekdays.map((a) => L[Number(a)]).join(" ") : "L M X J V";
     return n`
       <div class="scrim" @click=${this._closeDialog}></div>
       <div class="dialog" role="dialog" aria-modal="true">
@@ -2293,7 +2229,7 @@ class v extends j {
           </div>
           <div class="preview-time">${e}</div>
           <div class="preview-sub">${i}</div>
-          ${this._draft.media_player ? n`<div class="preview-speaker"><ha-icon icon="mdi:speaker"></ha-icon> ${String(this._draft.media_player).replace("media_player.", "").replace(/_/g, " ")}</div>` : l}
+          ${this._draft.media_player ? n`<div class="preview-speaker"><ha-icon icon="mdi:speaker"></ha-icon> ${String(this._draft.media_player).replace("media_player.", "").replace(/_/g, " ")}</div>` : d}
         </div>
 
         ${this._haForm ? n`<ha-form
@@ -2306,10 +2242,10 @@ class v extends j {
               <p class="warn">
                 Home Assistant's form components did not load, so this is a reduced editor.
               </p>
-              <label>Name<input .value=${this._draft.name ?? ""} @input=${(s) => this._draft = { ...this._draft, name: s.target.value }} /></label>
-              <label>Time<input type="time" .value=${this._draft.time ?? "07:00"} @input=${(s) => this._draft = { ...this._draft, time: s.target.value }} /></label>
-              <label>Media player<input .value=${this._draft.media_player ?? ""} @input=${(s) => this._draft = { ...this._draft, media_player: s.target.value }} /></label>
-              <label>Source<input .value=${this._draft.source_uri ?? ""} @input=${(s) => this._draft = { ...this._draft, source_uri: s.target.value }} /></label>
+              <label>Name<input .value=${this._draft.name ?? ""} @input=${(a) => this._draft = { ...this._draft, name: a.target.value }} /></label>
+              <label>Time<input type="time" .value=${this._draft.time ?? "07:00"} @input=${(a) => this._draft = { ...this._draft, time: a.target.value }} /></label>
+              <label>Media player<input .value=${this._draft.media_player ?? ""} @input=${(a) => this._draft = { ...this._draft, media_player: a.target.value }} /></label>
+              <label>Source<input .value=${this._draft.source_uri ?? ""} @input=${(a) => this._draft = { ...this._draft, source_uri: a.target.value }} /></label>
             `}
         <div class="dialog-actions">
           <button @click=${this._closeDialog}>Cancel</button>
@@ -2319,8 +2255,8 @@ class v extends j {
     `;
   }
   _renderTestModal() {
-    if (!this._testingAlarm) return l;
-    const e = this._testingAlarm, t = e.repeat === "once" ? e.date ?? "Una vez" : e.repeat === "never" ? e.date ? `${e.date} (Nunca)` : "Nunca (auto-borrado)" : e.weekdays.length === 7 ? "Todos los días" : e.weekdays.length === 0 ? "Sin días" : e.weekdays.map((i) => K[i]).join(" ");
+    if (!this._testingAlarm) return d;
+    const e = this._testingAlarm, t = e.repeat === "once" ? e.date ?? "Una vez" : e.repeat === "never" ? e.date ? `${e.date} (Nunca)` : "Nunca (auto-borrado)" : e.weekdays.length === 7 ? "Todos los días" : e.weekdays.length === 0 ? "Sin días" : e.weekdays.map((i) => L[i]).join(" ");
     return n`
       <div class="scrim" @click=${() => this._stopTest()}></div>
       <div class="dialog test-dialog" role="dialog" aria-modal="true">
@@ -2370,36 +2306,37 @@ class v extends j {
             class=${this._view === "settings" ? "selected" : ""}
             @click=${() => this._view = "settings"}
           >
-            Reloj y Ajustes
+            Ajustes de Alarmas
           </button>
           ${this._isAdmin ? n`<button
                 class=${this._view === "admin" ? "selected" : ""}
                 @click=${() => this._view = "admin"}
               >
                 Personas
-              </button>` : l}
+              </button>` : d}
         </div>
-        ${this._view === "alarms" && this._canCreate ? n`<button class="primary" @click=${this._openNew}>Añadir alarma</button>` : l}
+        ${this._view === "alarms" && this._canCreate ? n`<button class="primary" @click=${this._openNew}>Añadir alarma</button>` : d}
       </div>
 
       <div class="body">
-        ${this._error ? n`<div class="error">${this._error}</div>` : l}
+        ${this._error ? n`<div class="error">${this._error}</div>` : d}
         ${this._view === "admin" ? n`<wakey-admin
               .hass=${this.hass}
               .alarms=${this._alarms}
               .haForm=${this._haForm}
-            ></wakey-admin>` : this._view === "settings" ? n`<wakey-clock-settings
+            ></wakey-admin>` : this._view === "settings" ? n`<wakey-alarm-settings
                 .hass=${this.hass}
-              ></wakey-clock-settings>` : n`${this._renderRinging()} ${this._renderAlarms()}`}
+                .alarms=${this._alarms}
+              ></wakey-alarm-settings>` : n`${this._renderRinging()} ${this._renderAlarms()}`}
       </div>
 
       ${this._renderDialog()}
-      ${this._adjusting ? this._renderAdjustDialog() : l}
-      ${this._testingAlarm ? this._renderTestModal() : l}
+      ${this._adjusting ? this._renderAdjustDialog() : d}
+      ${this._testingAlarm ? this._renderTestModal() : d}
     `;
   }
   static {
-    this.styles = oe`
+    this.styles = Z`
     :host {
       display: block;
       min-height: 100vh;
@@ -2711,49 +2648,49 @@ class v extends j {
   `;
   }
 }
-_([
-  O({ attribute: !1 })
-], v.prototype, "hass");
-_([
-  O({ attribute: !1 })
-], v.prototype, "narrow");
-_([
-  f()
-], v.prototype, "_alarms");
-_([
-  f()
-], v.prototype, "_isAdmin");
-_([
-  f()
-], v.prototype, "_allowedPlayers");
-_([
-  f()
-], v.prototype, "_view");
-_([
-  f()
-], v.prototype, "_loaded");
-_([
-  f()
-], v.prototype, "_error");
-_([
-  f()
-], v.prototype, "_dialogOpen");
-_([
-  f()
-], v.prototype, "_editing");
-_([
-  f()
-], v.prototype, "_draft");
-_([
-  f()
-], v.prototype, "_adjusting");
-_([
-  f()
-], v.prototype, "_adjustTime");
-_([
-  f()
-], v.prototype, "_haForm");
-_([
-  f()
-], v.prototype, "_testingAlarm");
-customElements.get("wakey-panel") || customElements.define("wakey-panel", v);
+f([
+  w({ attribute: !1 })
+], g.prototype, "hass");
+f([
+  w({ attribute: !1 })
+], g.prototype, "narrow");
+f([
+  m()
+], g.prototype, "_alarms");
+f([
+  m()
+], g.prototype, "_isAdmin");
+f([
+  m()
+], g.prototype, "_allowedPlayers");
+f([
+  m()
+], g.prototype, "_view");
+f([
+  m()
+], g.prototype, "_loaded");
+f([
+  m()
+], g.prototype, "_error");
+f([
+  m()
+], g.prototype, "_dialogOpen");
+f([
+  m()
+], g.prototype, "_editing");
+f([
+  m()
+], g.prototype, "_draft");
+f([
+  m()
+], g.prototype, "_adjusting");
+f([
+  m()
+], g.prototype, "_adjustTime");
+f([
+  m()
+], g.prototype, "_haForm");
+f([
+  m()
+], g.prototype, "_testingAlarm");
+customElements.get("wakey-panel") || customElements.define("wakey-panel", g);

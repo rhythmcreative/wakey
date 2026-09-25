@@ -30,6 +30,7 @@ export class WakeyPanel extends LitElement {
   @state() private _adjusting: string | null = null;
   @state() private _adjustTime = "";
   @state() private _haForm = false;
+  @state() private _testingAlarm: Alarm | null = null;
 
   private _unsub?: () => void;
   private _subscribed = false;
@@ -145,7 +146,13 @@ export class WakeyPanel extends LitElement {
   }
 
   private _trigger(alarm: Alarm) {
+    this._testingAlarm = alarm;
     this._call({ type: "wakey/trigger", alarm_id: alarm.id });
+  }
+
+  private _stopTest() {
+    this._call({ type: "wakey/dismiss" });
+    this._testingAlarm = null;
   }
 
   // --- dialog ------------------------------------------------------------
@@ -456,10 +463,35 @@ export class WakeyPanel extends LitElement {
 
   private _renderDialog() {
     if (!this._dialogOpen) return nothing;
+    const timeVal = this._draft.time ? String(this._draft.time).slice(0, 5) : "07:00";
+    const nameVal = this._draft.name || "Alarma";
+    const daysVal =
+      this._draft.repeat === "once"
+        ? (this._draft.date || "Una vez")
+        : (this._draft.weekdays?.length === 7
+          ? "Todos los días"
+          : (this._draft.weekdays?.length
+            ? this._draft.weekdays.map((d: any) => DAY_LABELS[Number(d)]).join(" ")
+            : "L M X J V"));
+
     return html`
       <div class="scrim" @click=${this._closeDialog}></div>
       <div class="dialog" role="dialog" aria-modal="true">
-        <h2>${this._editing ? "Edit alarm" : "New alarm"}</h2>
+        <h2>${this._editing ? "Editar alarma" : "Nueva alarma"}</h2>
+
+        <div class="live-alarm-preview">
+          <div class="preview-header">
+            <div class="preview-icon"><ha-icon icon="mdi:alarm"></ha-icon></div>
+            <div class="preview-title">${nameVal}</div>
+            <span class="preview-badge ${this._editing ? "edit" : "new"}">${this._editing ? "EDITANDO" : "NUEVA"}</span>
+          </div>
+          <div class="preview-time">${timeVal}</div>
+          <div class="preview-sub">${daysVal}</div>
+          ${this._draft.media_player
+            ? html`<div class="preview-speaker"><ha-icon icon="mdi:speaker"></ha-icon> ${String(this._draft.media_player).replace("media_player.", "").replace(/_/g, " ")}</div>`
+            : nothing}
+        </div>
+
         ${this._haForm
           ? html`<ha-form
               .hass=${this.hass}
@@ -484,6 +516,44 @@ export class WakeyPanel extends LitElement {
         <div class="dialog-actions">
           <button @click=${this._closeDialog}>Cancel</button>
           <button class="primary" @click=${this._save}>Save</button>
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderTestModal() {
+    if (!this._testingAlarm) return nothing;
+    const alarm = this._testingAlarm;
+    const days =
+      alarm.repeat === "once"
+        ? alarm.date ?? "Una vez"
+        : alarm.weekdays.length === 7
+          ? "Todos los días"
+          : alarm.weekdays.length === 0
+            ? "Sin días"
+            : alarm.weekdays.map((d) => DAY_LABELS[d]).join(" ");
+
+    return html`
+      <div class="scrim" @click=${() => this._stopTest()}></div>
+      <div class="dialog test-dialog" role="dialog" aria-modal="true">
+        <div class="live-alarm-preview test-mode">
+          <div class="preview-header">
+            <div class="preview-icon pulsing"><ha-icon icon="mdi:bell-ring"></ha-icon></div>
+            <div class="preview-title">${alarm.name || "Alarma"}</div>
+            <span class="preview-badge test">SONANDO</span>
+          </div>
+          <div class="preview-time">${alarm.time}</div>
+          <div class="preview-sub">${days}</div>
+          <div class="preview-speaker">
+            <ha-icon icon="mdi:speaker"></ha-icon> ${String(alarm.media_player || "Altavoz").replace("media_player.", "").replace(/_/g, " ")}
+          </div>
+        </div>
+        <div class="dialog-actions test-actions">
+          <button class="primary danger-btn" @click=${() => this._stopTest()}>
+            <ha-icon icon="mdi:stop" style="--mdc-icon-size: 18px; margin-right: 4px; vertical-align: -2px;"></ha-icon>
+            Detener sonido
+          </button>
+          <button @click=${() => (this._testingAlarm = null)}>Cerrar ventana</button>
         </div>
       </div>
     `;
@@ -544,6 +614,7 @@ export class WakeyPanel extends LitElement {
 
       ${this._renderDialog()}
       ${this._adjusting ? this._renderAdjustDialog() : nothing}
+      ${this._testingAlarm ? this._renderTestModal() : nothing}
     `;
   }
 
@@ -759,6 +830,102 @@ export class WakeyPanel extends LitElement {
     .warn {
       color: var(--warning-color, #ffa600);
       font-size: 13px;
+    }
+    .live-alarm-preview {
+      background: var(--secondary-background-color, rgba(127, 127, 127, 0.08));
+      border: 1px solid var(--divider-color, rgba(127, 127, 127, 0.15));
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      font-family: var(--ha-font-family, "Google Sans", Roboto, sans-serif);
+      color: var(--primary-text-color, #e8eaed);
+    }
+    .live-alarm-preview.test-mode {
+      border-color: rgba(219, 68, 55, 0.4);
+      background: rgba(219, 68, 55, 0.06);
+    }
+    .preview-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    .preview-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--divider-color, rgba(127, 127, 127, 0.15));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-color, #03a9f4);
+      flex-shrink: 0;
+    }
+    .preview-title {
+      font-size: 18px;
+      font-weight: 500;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .preview-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .preview-badge.new {
+      background: rgba(76, 175, 80, 0.15);
+      color: #4caf50;
+    }
+    .preview-badge.edit {
+      background: rgba(3, 169, 244, 0.15);
+      color: var(--primary-color, #03a9f4);
+    }
+    .preview-badge.test {
+      background: rgba(219, 68, 55, 0.2);
+      color: var(--error-color, #db4437);
+    }
+    .preview-time {
+      font-size: clamp(2.5rem, 8vw, 3.25rem);
+      font-weight: 500;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      margin: 4px 0 2px 0;
+    }
+    .preview-sub {
+      font-size: 16px;
+      color: var(--secondary-text-color, #9e9e9e);
+      margin-top: 2px;
+    }
+    .preview-speaker {
+      font-size: 13px;
+      color: var(--secondary-text-color, #9e9e9e);
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .preview-speaker ha-icon {
+      --mdc-icon-size: 15px;
+    }
+    .danger-btn {
+      background: var(--error-color, #db4437) !important;
+      color: #fff !important;
+      border-color: transparent !important;
+    }
+    @keyframes wakey-pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: 0.75; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .pulsing {
+      animation: wakey-pulse 1.4s ease-in-out infinite;
+      color: var(--error-color, #db4437) !important;
     }
   `;
 }

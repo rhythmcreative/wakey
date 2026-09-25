@@ -1,5 +1,5 @@
 import { LitElement, css, html, nothing, type PropertyValues } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 import {
   DAY_LABELS,
   emptyDraft,

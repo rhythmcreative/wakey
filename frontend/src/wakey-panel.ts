@@ -244,6 +244,7 @@ export class WakeyPanel extends LitElement {
             options: [
               { value: "weekly", label: "Weekly" },
               { value: "once", label: "Once" },
+              { value: "never", label: "Never (auto-delete)" },
             ],
           },
         },
@@ -392,12 +393,14 @@ export class WakeyPanel extends LitElement {
   private _renderAlarm(alarm: Alarm) {
     const days =
       alarm.repeat === "once"
-        ? alarm.date ?? "Once"
-        : alarm.weekdays.length === 7
-          ? "Every day"
-          : alarm.weekdays.length === 0
-            ? "No days selected"
-            : alarm.weekdays.map((d) => DAY_LABELS[d]).join(" ");
+        ? (alarm.date ?? "Once")
+        : alarm.repeat === "never"
+          ? (alarm.date ? `${alarm.date} (Never)` : "Never (auto-delete)")
+          : alarm.weekdays.length === 7
+            ? "Every day"
+            : alarm.weekdays.length === 0
+              ? "No days selected"
+              : alarm.weekdays.map((d) => DAY_LABELS[d]).join(" ");
 
     return html`
       <div class="card ${alarm.enabled ? "" : "dim"}">
@@ -467,11 +470,13 @@ export class WakeyPanel extends LitElement {
     const daysVal =
       this._draft.repeat === "once"
         ? (this._draft.date || "Una vez")
-        : (this._draft.weekdays?.length === 7
-          ? "Todos los días"
-          : (this._draft.weekdays?.length
-            ? this._draft.weekdays.map((d: any) => DAY_LABELS[Number(d)]).join(" ")
-            : "L M X J V"));
+        : this._draft.repeat === "never"
+          ? (this._draft.date ? `${this._draft.date} (Nunca)` : "Nunca (auto-borrado)")
+          : (this._draft.weekdays?.length === 7
+            ? "Todos los días"
+            : (this._draft.weekdays?.length
+              ? this._draft.weekdays.map((d: any) => DAY_LABELS[Number(d)]).join(" ")
+              : "L M X J V"));
 
     return html`
       <div class="scrim" @click=${this._closeDialog}></div>
@@ -525,12 +530,14 @@ export class WakeyPanel extends LitElement {
     const alarm = this._testingAlarm;
     const days =
       alarm.repeat === "once"
-        ? alarm.date ?? "Una vez"
-        : alarm.weekdays.length === 7
-          ? "Todos los días"
-          : alarm.weekdays.length === 0
-            ? "Sin días"
-            : alarm.weekdays.map((d) => DAY_LABELS[d]).join(" ");
+        ? (alarm.date ?? "Una vez")
+        : alarm.repeat === "never"
+          ? (alarm.date ? `${alarm.date} (Nunca)` : "Nunca (auto-borrado)")
+          : alarm.weekdays.length === 7
+            ? "Todos los días"
+            : alarm.weekdays.length === 0
+              ? "Sin días"
+              : alarm.weekdays.map((d) => DAY_LABELS[d]).join(" ");
 
     return html`
       <div class="scrim" @click=${() => this._stopTest()}></div>

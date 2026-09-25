@@ -3,7 +3,7 @@ export interface Alarm {
   name: string;
   enabled: boolean;
   time: string;
-  repeat: "once" | "weekly";
+  repeat: "once" | "weekly" | "never";
   weekdays: number[];
   date: string | null;
   skip_next: boolean;

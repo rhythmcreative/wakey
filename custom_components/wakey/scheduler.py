@@ -22,6 +22,8 @@ from homeassistant.util import dt as dt_util
 from . import occurrence
 from .const import (
     MISSED_ALARM_GRACE,
+    REPEAT_NEVER,
+    REPEAT_ONCE,
     SIGNAL_ALARMS_CHANGED,
     SIGNAL_RUNTIME_CHANGED,
 )
@@ -279,7 +281,12 @@ class WakeyScheduler:
         if alarm.skip_next:
             _LOGGER.info("Skipping this occurrence of %s as requested", alarm.name)
             self.store.async_update(alarm_id, {"skip_next": False})
-            # async_update dispatches SIGNAL_ALARMS_CHANGED, which reschedules.
+            if alarm.repeat in (REPEAT_ONCE, REPEAT_NEVER):
+                _LOGGER.info(
+                    "One-time/never alarm %s was skipped and has no future occurrences; deleting",
+                    alarm.name,
+                )
+                self.store.async_delete(alarm_id)
             return
 
         await self._fire(alarm, False)
@@ -355,6 +362,13 @@ class WakeyScheduler:
                     MISSED_ALARM_GRACE,
                 )
                 self.store.async_update(alarm.id, {"last_fired": previous.isoformat()})
+                if alarm.repeat in (REPEAT_ONCE, REPEAT_NEVER):
+                    _LOGGER.info(
+                        "Deleting missed one-time/never alarm %s (%s)",
+                        alarm.name,
+                        alarm.id,
+                    )
+                    self.store.async_delete(alarm.id)
                 continue
 
             _LOGGER.warning(

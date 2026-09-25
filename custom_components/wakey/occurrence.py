@@ -15,6 +15,7 @@ MAX_SEARCH_DAYS = 14
 
 REPEAT_ONCE = "once"
 REPEAT_WEEKLY = "weekly"
+REPEAT_NEVER = "never"
 
 
 def parse_time(value: str) -> time:
@@ -89,10 +90,13 @@ def _matches(day: date, repeat: str, weekdays: list[int] | None) -> bool:
 
 
 def _candidate_days(repeat: str, one_off_date: str | None, anchor: date, forward: bool) -> list[date]:
-    if repeat == REPEAT_ONCE:
+    if repeat in (REPEAT_ONCE, REPEAT_NEVER):
         if not one_off_date:
+            return [anchor, anchor + timedelta(days=1)] if forward else [anchor, anchor - timedelta(days=1)]
+        try:
+            return [date.fromisoformat(one_off_date)]
+        except ValueError:
             return []
-        return [date.fromisoformat(one_off_date)]
     step = 1 if forward else -1
     return [anchor + timedelta(days=step * i) for i in range(MAX_SEARCH_DAYS + 1)]
 

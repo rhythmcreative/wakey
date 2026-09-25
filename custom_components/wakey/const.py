@@ -98,7 +98,8 @@ ERR_INVALID_FORMAT = "invalid_format"
 # --- Enumerations ----------------------------------------------------------
 REPEAT_ONCE = "once"
 REPEAT_WEEKLY = "weekly"
-REPEAT_MODES = [REPEAT_ONCE, REPEAT_WEEKLY]
+REPEAT_NEVER = "never"
+REPEAT_MODES = [REPEAT_ONCE, REPEAT_WEEKLY, REPEAT_NEVER]
 
 SOURCE_MUSIC_ASSISTANT = "music_assistant"
 SOURCE_MEDIA_PLAYER = "media_player"

@@ -195,6 +195,32 @@ def test_skipped_one_off_never_fires():
     )
 
 
+def test_never_in_future():
+    now = _utc(2026, 8, 8, 12, 0)
+    result = occurrence.next_occurrence(
+        time_str="06:30",
+        repeat="never",
+        weekdays=None,
+        one_off_date="2026-08-09",
+        tz=NY,
+        now_utc=now,
+    )
+    assert result == _utc(2026, 8, 9, 6, 30)
+
+
+def test_never_without_date_picks_next_occurrence():
+    now = _utc(2026, 8, 8, 12, 0)
+    result = occurrence.next_occurrence(
+        time_str="14:00",
+        repeat="never",
+        weekdays=None,
+        one_off_date=None,
+        tz=NY,
+        now_utc=now,
+    )
+    assert result == _utc(2026, 8, 8, 14, 0)
+
+
 # --- previous / missed detection -------------------------------------------
 
 

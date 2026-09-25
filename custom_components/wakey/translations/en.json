@@ -14,7 +14,8 @@
     "repeat": {
       "options": {
         "once": "Once",
-        "weekly": "Weekly"
+        "weekly": "Weekly",
+        "never": "Never"
       }
     },
     "source_kind": {

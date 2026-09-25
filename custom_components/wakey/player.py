@@ -43,6 +43,8 @@ from .const import (
     FADE_FLOOR,
     FADE_STEP_SECONDS,
     PLAYBACK_VERIFY_SECONDS,
+    REPEAT_NEVER,
+    REPEAT_ONCE,
     SERVICE_CALL_TIMEOUT,
     SIGNAL_RUNTIME_CHANGED,
     SOURCE_MUSIC_ASSISTANT,
@@ -164,6 +166,13 @@ class WakeyPlayer:
                         alarm.name,
                         alarm.repeat_count,
                     )
+                    if alarm.repeat in (REPEAT_ONCE, REPEAT_NEVER):
+                        _LOGGER.info(
+                            "Auto-deleting one-time/never alarm %s (%s) after playback repeat limit",
+                            alarm.name,
+                            alarm.id,
+                        )
+                        self.store.async_delete(alarm.id)
                     return
                 _LOGGER.info(
                     "Alarm %s track ended; looping playback (%d/%s) on %s",
@@ -616,6 +625,13 @@ class WakeyPlayer:
                 {ATTR_ALARM_ID: alarm_id, "name": alarm.name, "reason": reason},
             )
             _LOGGER.info("Dismissed %s (%s)", alarm.name, reason)
+            if alarm.repeat in (REPEAT_ONCE, REPEAT_NEVER):
+                _LOGGER.info(
+                    "Auto-deleting one-time/never alarm %s (%s) after dismissal",
+                    alarm.name,
+                    alarm_id,
+                )
+                self.store.async_delete(alarm_id)
 
         async_dispatcher_send(self.hass, SIGNAL_RUNTIME_CHANGED)
         return True

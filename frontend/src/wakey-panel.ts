@@ -9,6 +9,7 @@ import {
   type Snapshot,
 } from "./types";
 import "./wakey-admin";
+import "./wakey-clock-settings";
 
 const DAY_OPTIONS = DAY_LABELS.map((label, i) => ({ value: String(i), label }));
 
@@ -20,7 +21,7 @@ export class WakeyPanel extends LitElement {
   @state() private _alarms: Alarm[] = [];
   @state() private _isAdmin = false;
   @state() private _allowedPlayers: string[] | null = null;
-  @state() private _view: "alarms" | "admin" = "alarms";
+  @state() private _view: "alarms" | "settings" | "admin" = "alarms";
   @state() private _loaded = false;
   @state() private _error: string | null = null;
   @state() private _dialogOpen = false;
@@ -582,40 +583,49 @@ export class WakeyPanel extends LitElement {
   }
 
   protected render() {
-    const admin = this._view === "admin";
     return html`
       <div class="header">
         <h1>Wakey</h1>
-        ${this._isAdmin
-          ? html`<div class="tabs">
-              <button
-                class=${admin ? "" : "selected"}
-                @click=${() => (this._view = "alarms")}
-              >
-                Alarms
-              </button>
-              <button
-                class=${admin ? "selected" : ""}
+        <div class="tabs">
+          <button
+            class=${this._view === "alarms" ? "selected" : ""}
+            @click=${() => (this._view = "alarms")}
+          >
+            Alarmas
+          </button>
+          <button
+            class=${this._view === "settings" ? "selected" : ""}
+            @click=${() => (this._view = "settings")}
+          >
+            Reloj y Ajustes
+          </button>
+          ${this._isAdmin
+            ? html`<button
+                class=${this._view === "admin" ? "selected" : ""}
                 @click=${() => (this._view = "admin")}
               >
-                People
-              </button>
-            </div>`
-          : nothing}
-        ${!admin && this._canCreate
-          ? html`<button class="primary" @click=${this._openNew}>Add alarm</button>`
+                Personas
+              </button>`
+            : nothing}
+        </div>
+        ${this._view === "alarms" && this._canCreate
+          ? html`<button class="primary" @click=${this._openNew}>Añadir alarma</button>`
           : nothing}
       </div>
 
       <div class="body">
         ${this._error ? html`<div class="error">${this._error}</div>` : nothing}
-        ${admin
+        ${this._view === "admin"
           ? html`<wakey-admin
               .hass=${this.hass}
               .alarms=${this._alarms}
               .haForm=${this._haForm}
             ></wakey-admin>`
-          : html`${this._renderRinging()} ${this._renderAlarms()}`}
+          : this._view === "settings"
+            ? html`<wakey-clock-settings
+                .hass=${this.hass}
+              ></wakey-clock-settings>`
+            : html`${this._renderRinging()} ${this._renderAlarms()}`}
       </div>
 
       ${this._renderDialog()}
